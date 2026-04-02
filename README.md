@@ -1,35 +1,43 @@
-# Nu primesc notă pentru că nu am pus titlu și descriere
+# Minesweeper
 
-### Folosiți template-ul corespunzător grupei voastre!
+Reimplementarea unui joc clasic, într-o manieră neclasică. Dacă deschideai jocul ăsta pe Windows XP pentru că-ți pica netu' și nu mai aveai cum să joci CS 1.6 cu prietenii, de data asta s-ar putea să-ți reziliezi abonamentul la Digi pentru că-ți vei da seama că e singurul joc și prieten de care ai nevoie.
 
-| Laborant  | Link template                                |
-|-----------|----------------------------------------------|
-| Dragoș B  | https://github.com/Ionnier/oop-template      |
-| Tiberiu M | https://github.com/MaximTiberiu/oop-template |
-| Marius MC | https://github.com/mcmarius/oop-template     |
+Nu ești un simplu individ care încearcă să descopere minele de pe tablă. Acum, lupți împotrivă unui mediu ostil — jocul ăsta nu vrea să câștigi. Folosește-ți abilitățile pentru a învinge.
 
-### Important!
+## Roadmap
+- [ ] Reimplementarea jocului original
+- [ ] Dificultate personalizată: număr de mine, dimensiune, etc.
+- [ ] Niveluri de dificultate prestabilite
+- [ ] Leaderboard cu scorurile obținute
+- [ ] Salvarea și vizualizarea în timp real a gameplay-urilor precedente
+- [ ] Dificultăți suplimentare
+  - [ ] Celule care necesită mai multe click-uri (sau un anumit CPM atins pentru o durată de timp) pentru a fi descoperite
+  - [ ] Din momentul în care poziția unei mine poate fi dedusă, jucătorul are un timp determinat pentru a o marca, altfel jocul este pierdut
+  - [ ] Pătratele deja descoperite pot redeveni ascunse
+  - [ ] Stegulețele plasate pot dispărea
+  - [ ] Fereastra jocului devine oglindită, rotită, sau începe să se mute la întâmplare pe ecran
+  - [ ] Luminozitatea ferestrei scade substanțial, îngreunând vizibilitatea jocului
+  - [ ] Câteva cifre sunt corupte pentru un timp determinat și cifrele indicate nu mai pot fi citite
+  - [ ] Ultimele de mai sus au loc când jocul se apropie de final, când nu există progres din partea jucătorului, dar și la întâmplare
+  - [ ] Dacă nu există progres din partea jucătorului, timpul începe să se scurgă mai repede (doar în modul Contra-timp)
+- [ ] Abilități ajutătoare
+  - [ ] Anulează toate efectele de mai sus pentru un timp determinat
+  - [ ] Descoperă un pătrat *ales* fără a muri, chiar dacă acolo se află o mină (NU ai două vieți în sens global)
+  - [ ] Descoperă pozițiile tuturor minelor pentru un timp *foarte* scurt
+  - [ ] Îngheață contorul pentru un timp nedeterminat, dar nu mai ai voie să interacționezi cu tabla (doar în modul Contra-timp)
+  - [ ] Crește dimensiunea zonei pe care o poți vedea pentru un timp determinat (doar în modul Telescop)
+- [ ] Moduri de joc
+  - [ ] Clasic
+  - [ ] Contra-timp: timp limită în care să rezolvi jocul
+  - [ ] Telescop: poți vedea, permanent, doar o zonă de 3x3, pe care o poți naviga
+- [ ] Tutorial
 
-Aveți voie cu cod generat de modele de limbaj la care nu ați contribuit semnificativ doar dacă documentați riguros acest proces.
-Codul generat pus "ca să fie"/pe care nu îl înțelegeți se punctează doar pentru puncte bonus, doar în contextul
-în care oferă funcționalități ajutătoare și doar dacă are sens.
-
-Codul din proiect trebuie să poată fi ușor de înțeles și de modificat de către altcineva. Pentru detalii, veniți la ore.
-
-O cerință nu se consideră îndeplinită dacă este realizată doar prin cod generat.
-
-- **Fără cod de umplutură/fără sens!**
-- **Fără copy-paste!**
-- **Fără variabile globale!**
-- **Fără atribute publice!**
-- **Pentru T2 și T3, fără date în cod!** Datele vor fi citite din fișier, aveți exemple destule.
-- **Obligatoriu** fișiere cu date mai multe din care să citiți, obligatoriu cu biblioteci externe: fișiere (local sau server) sau baze de date
-- obligatoriu (TBD) să integrați cel puțin două biblioteci externe pe lângă cele pentru stocare
+Și altele, în funcție de ideile ce-or mai veni pe parcurs.
 
 ### Tema 0
 
-- [ ] Nume proiect (poate fi schimbat ulterior)
-- [ ] Scurtă descriere a temei alese, ce v-ați propus să implementați
+- [x] Nume proiect (poate fi schimbat ulterior)
+- [x] Scurtă descriere a temei alese, ce v-ați propus să implementați
 
 ## Tema 1
 
