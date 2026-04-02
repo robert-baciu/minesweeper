@@ -1,4 +1,14 @@
 BasedOnStyle: LLVM
 IndentWidth: 4
 
+AllowShortFunctionsOnASingleLine: None
 BreakBeforeBraces: Allman
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex:         '^<.*>'
+    Priority:      1
+  - Regex:         '^".*"'
+    Priority:      2
+InsertBraces: true
+QualifierAlignment: Right
+SortIncludes: CaseInsensitive
