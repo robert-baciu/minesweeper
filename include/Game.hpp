@@ -5,6 +5,7 @@
 #include <memory>
 #include <SFML/Window/Keyboard.hpp>
 
+#include "AssetManager.hpp"
 #include "GameState.hpp"
 #include "GameWindow.hpp"
 #include "MenuState.hpp"
@@ -24,6 +25,7 @@ class Game
     static constexpr unsigned int HEIGHT = 600;
 
     GameWindow window{WIDTH, HEIGHT};
+    AssetManager assets;
 
     enum class Lifecycle
     {
@@ -45,6 +47,7 @@ class Game
 Game::Game()
 {
     currentState = std::make_unique<MenuState>();
+    assets.init();
     lastTime = std::chrono::high_resolution_clock::now();
 }
 
