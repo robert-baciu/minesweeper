@@ -1,16 +1,21 @@
 #pragma once
 
 #include <memory>
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Text.hpp>
 #include <SFML/Window/Keyboard.hpp>
 
 #include "GameState.hpp"
 #include "PlayingState.hpp"
+#include "SFML/Graphics/Rect.hpp"
+#include "StateContext.hpp"
 
 class MenuState : public GameState
 {
   public:
-    void draw(sf::RenderWindow &window) override;
+    explicit MenuState(StateContext const &ctx);
+    void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
     std::unique_ptr<GameState> getNextState() override;
     void handleEvent(std::optional<sf::Event> const &event) override;
     void print(std::ostream &os) const override;
@@ -20,16 +25,24 @@ class MenuState : public GameState
     bool startPlaying = false;
 };
 
-void MenuState::draw(sf::RenderWindow &window)
+MenuState::MenuState(StateContext const &ctx) : GameState(ctx)
 {
-    window.clear(sf::Color::Red);
+}
+
+void MenuState::draw(sf::RenderTarget &target, sf::RenderStates states) const
+{
+    auto text = sf::Text{ctx.assets.getFont("main"), "Press ENTER to play", 32};
+    sf::FloatRect textRect = text.getLocalBounds();
+    text.setOrigin(textRect.getCenter());
+    text.setPosition(target.getView().getCenter());
+    target.draw(text, states);
 }
 
 std::unique_ptr<GameState> MenuState::getNextState()
 {
     if (startPlaying)
     {
-        return std::make_unique<PlayingState>();
+        return std::make_unique<PlayingState>(ctx);
     }
     return nullptr;
 }

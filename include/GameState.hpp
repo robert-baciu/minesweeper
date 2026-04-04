@@ -6,10 +6,13 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 
-class GameState
+#include "SFML/Graphics/Drawable.hpp"
+#include "StateContext.hpp"
+
+class GameState : public sf::Drawable
 {
   public:
-    virtual ~GameState() = default;
+    explicit GameState(StateContext const &ctx);
 
     friend std::ostream &operator<<(std::ostream &os, GameState const &state)
     {
@@ -17,7 +20,6 @@ class GameState
         return os;
     }
 
-    virtual void draw(sf::RenderWindow &window) = 0;
     virtual std::unique_ptr<GameState> getNextState() = 0;
     virtual void update(double dt) = 0;
 
@@ -41,5 +43,13 @@ class GameState
     }
 
   protected:
+    StateContext const &ctx;
+
+    void draw(sf::RenderTarget &target,
+              sf::RenderStates states) const override = 0;
     virtual void print(std::ostream &os) const = 0;
 };
+
+GameState::GameState(StateContext const &ctx) : ctx(ctx)
+{
+}

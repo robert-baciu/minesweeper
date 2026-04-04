@@ -6,10 +6,10 @@
 #include <SFML/Window/Keyboard.hpp>
 
 #include "AssetManager.hpp"
+#include "ExitingState.hpp"
 #include "GameState.hpp"
 #include "GameWindow.hpp"
 #include "MenuState.hpp"
-#include "QuittingState.hpp"
 
 class Game
 {
@@ -21,11 +21,9 @@ class Game
     friend std::ostream &operator<<(std::ostream &os, Game const &game);
 
   private:
-    static constexpr unsigned int WIDTH = 800;
-    static constexpr unsigned int HEIGHT = 600;
-
-    GameWindow window{WIDTH, HEIGHT};
     AssetManager assets;
+    GameWindow window;
+    StateContext const stateContext;
 
     enum class Lifecycle
     {
@@ -35,8 +33,6 @@ class Game
         Stopped
     };
     Lifecycle lifecycle = Lifecycle::Running;
-
-    // NOTE: Could use a stack of states
     std::unique_ptr<GameState> currentState;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> lastTime;
@@ -44,10 +40,10 @@ class Game
     void handleEvents();
 };
 
-Game::Game()
+Game::Game() : stateContext{assets, window}
 {
-    currentState = std::make_unique<MenuState>();
     assets.init();
+    currentState = std::make_unique<MenuState>(stateContext);
     lastTime = std::chrono::high_resolution_clock::now();
 }
 
@@ -65,7 +61,8 @@ void Game::loop()
 
     handleEvents();
     currentState->update(dt);
-    currentState->draw(window.get());
+    window.get().clear(sf::Color::Black);
+    window.get().draw(*currentState);
     window.get().display();
 
     if (lifecycle == Lifecycle::Exiting && currentState->isReadyToExit())
@@ -82,7 +79,7 @@ void Game::loop()
         }
         else
         {
-            currentState = std::make_unique<QuittingState>();
+            currentState = std::make_unique<ExitingState>(stateContext);
         }
         lifecycle = Lifecycle::Exiting;
         return;
@@ -99,7 +96,7 @@ void Game::loop()
 
 std::ostream &operator<<(std::ostream &os, Game const &game)
 {
-    os << "Game[lifecycle=";
+    os << "Game[window=" << game.window << ", lifecycle=";
 
     switch (game.lifecycle)
     {
@@ -133,6 +130,7 @@ void Game::handleEvents()
             }
             continue;
         }
+
         if (event->is<sf::Event::KeyPressed>())
         {
             auto const *key = event->getIf<sf::Event::KeyPressed>();

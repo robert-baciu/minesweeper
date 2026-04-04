@@ -6,7 +6,7 @@ int main()
     while (game.isRunning())
     {
         game.loop();
-        std::cout << game << std::endl;
+        // std::cout << game << std::endl;
     }
     return 0;
 }
