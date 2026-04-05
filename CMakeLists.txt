@@ -64,6 +64,15 @@ add_executable(${MAIN_EXECUTABLE_NAME}
 )
 target_sources(${MAIN_EXECUTABLE_NAME}
     PRIVATE
+    src/AssetManager.cpp
+    src/Cell.cpp
+    src/ExitingState.cpp
+    src/Game.cpp
+    src/GameState.cpp
+    src/GameWindow.cpp
+    src/Grid.cpp
+    src/MenuState.cpp
+    src/PlayingState.cpp
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )

@@ -3,10 +3,10 @@
 #include <memory>
 #include <optional>
 #include <ostream>
+#include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 
-#include "SFML/Graphics/Drawable.hpp"
 #include "StateContext.hpp"
 
 class GameState : public sf::Drawable
@@ -49,7 +49,3 @@ class GameState : public sf::Drawable
               sf::RenderStates states) const override = 0;
     virtual void print(std::ostream &os) const = 0;
 };
-
-GameState::GameState(StateContext const &ctx) : ctx(ctx)
-{
-}
