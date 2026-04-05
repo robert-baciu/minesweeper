@@ -13,16 +13,13 @@ class Game
 {
   public:
     Game();
-    bool isRunning() const;
+
+    bool isLooping() const;
     void loop();
 
     friend std::ostream &operator<<(std::ostream &os, Game const &game);
 
   private:
-    AssetManager assets;
-    GameWindow window;
-    StateContext const stateContext;
-
     enum class Lifecycle
     {
         Running,
@@ -30,10 +27,16 @@ class Game
         Exiting,
         Stopped
     };
-    Lifecycle lifecycle = Lifecycle::Running;
-    std::unique_ptr<GameState> currentState;
-
-    std::chrono::time_point<std::chrono::high_resolution_clock> lastTime;
 
     void handleEvents();
+
+    AssetManager assets;
+    GameWindow window;
+    StateContext const stateContext;
+
+    Lifecycle lifecycle = Lifecycle::Running;
+
+    std::unique_ptr<GameState> currentState;
+
+    std::chrono::time_point<std::chrono::high_resolution_clock> prevUpdateTime;
 };

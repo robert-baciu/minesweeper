@@ -7,8 +7,10 @@
 class AssetManager
 {
   public:
-    void init();
+    void load();
+
     sf::Font const &getFont(std::string const &name) const;
+    sf::Font const &getMainFont() const;
 
     friend std::ostream &operator<<(std::ostream &os,
                                     AssetManager const &assetManager);

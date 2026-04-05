@@ -9,7 +9,7 @@ int main()
     srand(rd());
 
     Game game;
-    while (game.isRunning())
+    while (game.isLooping())
     {
         game.loop();
         // std::cout << game << std::endl;

@@ -40,7 +40,21 @@ void Cell::setMineCount(unsigned int newMineCount)
 
 std::ostream &operator<<(std::ostream &os, Cell const &cell)
 {
-    os << "Cell[";
+    os << "Cell[state=";
+    switch (cell.state)
+    {
+    case Cell::State::Unrevealed:
+        os << "Unrevealed";
+        break;
+    case Cell::State::Revealed:
+        os << "Revealed";
+        break;
+    case Cell::State::Flagged:
+        os << "Flagged";
+        break;
+    }
+
+    os << ", type=";
     switch (cell.type)
     {
     case Cell::Type::Empty:

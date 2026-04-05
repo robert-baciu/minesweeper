@@ -9,6 +9,7 @@ class GameWindow
 {
   public:
     GameWindow();
+
     sf::RenderWindow &get();
 
     friend std::ostream &operator<<(std::ostream &os,
@@ -16,5 +17,4 @@ class GameWindow
 
   private:
     sf::RenderWindow window;
-    sf::View view;
 };

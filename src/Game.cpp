@@ -5,12 +5,12 @@
 
 Game::Game() : stateContext{assets, window}
 {
-    assets.init();
+    assets.load();
     currentState = std::make_unique<MenuState>(stateContext);
-    lastTime = std::chrono::high_resolution_clock::now();
+    prevUpdateTime = std::chrono::high_resolution_clock::now();
 }
 
-bool Game::isRunning() const
+bool Game::isLooping() const
 {
     return lifecycle != Lifecycle::Stopped;
 }
@@ -18,16 +18,18 @@ bool Game::isRunning() const
 void Game::loop()
 {
     auto currentTime = std::chrono::high_resolution_clock::now();
-    auto elapsedTime = std::chrono::duration<double>(currentTime - lastTime);
+    auto elapsedTime =
+        std::chrono::duration<double>(currentTime - prevUpdateTime);
     double dt = elapsedTime.count();
-    lastTime = currentTime;
+    prevUpdateTime = currentTime;
 
     handleEvents();
     currentState->update(dt);
-    window.get().clear(sf::Color::Black);
+    window.get().clear();
     window.get().draw(*currentState);
     window.get().display();
 
+    // TODO: rethink this bad logic
     if (lifecycle == Lifecycle::Exiting && currentState->isReadyToExit())
     {
         lifecycle = Lifecycle::Stopped;
@@ -55,30 +57,6 @@ void Game::loop()
             currentState = std::move(nextState);
         }
     }
-}
-
-std::ostream &operator<<(std::ostream &os, Game const &game)
-{
-    os << "Game[window=" << game.window << ", lifecycle=";
-
-    switch (game.lifecycle)
-    {
-    case Game::Lifecycle::Running:
-        os << "Running";
-        break;
-    case Game::Lifecycle::ExitRequested:
-        os << "ExitRequested";
-        break;
-    case Game::Lifecycle::Exiting:
-        os << "Exiting";
-        break;
-    case Game::Lifecycle::Stopped:
-        os << "Stopped";
-        break;
-    }
-
-    os << ", state=" << *game.currentState << "]";
-    return os;
 }
 
 void Game::handleEvents()
@@ -109,4 +87,28 @@ void Game::handleEvents()
 
         currentState->handleEvent(event);
     }
+}
+
+std::ostream &operator<<(std::ostream &os, Game const &game)
+{
+    os << "Game[window=" << game.window << ", lifecycle=";
+
+    switch (game.lifecycle)
+    {
+    case Game::Lifecycle::Running:
+        os << "Running";
+        break;
+    case Game::Lifecycle::ExitRequested:
+        os << "ExitRequested";
+        break;
+    case Game::Lifecycle::Exiting:
+        os << "Exiting";
+        break;
+    case Game::Lifecycle::Stopped:
+        os << "Stopped";
+        break;
+    }
+
+    os << ", state=" << *game.currentState << "]";
+    return os;
 }

@@ -10,29 +10,43 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Mouse.hpp>
 
+#include "CellGrid.hpp"
 #include "GameState.hpp"
-#include "Grid.hpp"
 
 class PlayingState : public GameState
 {
   public:
-    explicit PlayingState(StateContext const &ctx);
-    void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
-    std::unique_ptr<GameState> getNextState() override;
-    void handleEvent(std::optional<sf::Event> const &event) override;
-    void print(std::ostream &os) const override;
+    explicit PlayingState(StateContext const &ctx, int cols, int rows);
+
     void update(double dt) override;
+    void handleEvent(std::optional<sf::Event> const &event) override;
+
+    std::unique_ptr<GameState> getNextState() override;
+
+    void print(std::ostream &os) const override;
+
+  protected:
+    void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
   private:
-    static constexpr auto HEADER_HEIGHT = 200.0f;
-    static constexpr auto GRID_OFFSET = sf::Vector2f{0.0f, HEADER_HEIGHT};
+    void reveal(int col, int row);
 
-    static constexpr int COLS = 16;
-    static constexpr int ROWS = 24;
-    static constexpr float CELL_SIZE = 48.0f;
+    static sf::Color getCellColor(Cell::State state);
+    static sf::Color getCellTextColor(unsigned int mineCount);
 
-    static constexpr auto CELL_COLOR = sf::Color{190, 190, 190};
-    static constexpr auto CELL_COLOR_HOVER = sf::Color{205, 205, 205};
+    static constexpr float CELL_SIZE = 64.0f;
+    static constexpr float CELL_PADDING = 2.0f;
+    static constexpr auto CELL_TEXT_CHAR_SIZE =
+        static_cast<unsigned int>(CELL_SIZE * 0.9f);
 
-    Grid grid;
+    int cols;
+    int rows;
+
+    CellGrid grid;
+
+    mutable sf::RectangleShape cellShape;
+    mutable sf::Text cellText;
+
+    bool gameLost = false;
+    bool firstReveal = true;
 };

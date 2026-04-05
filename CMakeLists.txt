@@ -66,11 +66,11 @@ target_sources(${MAIN_EXECUTABLE_NAME}
     PRIVATE
     src/AssetManager.cpp
     src/Cell.cpp
+    src/CellGrid.cpp
     src/ExitingState.cpp
     src/Game.cpp
     src/GameState.cpp
     src/GameWindow.cpp
-    src/Grid.cpp
     src/MenuState.cpp
     src/PlayingState.cpp
 )

@@ -13,11 +13,16 @@ class MenuState : public GameState
 {
   public:
     explicit MenuState(StateContext const &ctx);
-    void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
-    std::unique_ptr<GameState> getNextState() override;
-    void handleEvent(std::optional<sf::Event> const &event) override;
-    void print(std::ostream &os) const override;
+
     void update(double dt) override;
+    void handleEvent(std::optional<sf::Event> const &event) override;
+
+    std::unique_ptr<GameState> getNextState() override;
+
+    void print(std::ostream &os) const override;
+
+  protected:
+    void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
   private:
     bool startPlaying = false;

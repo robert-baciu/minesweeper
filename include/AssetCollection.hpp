@@ -7,13 +7,13 @@
 template <typename T> class AssetCollection
 {
   public:
-    T const &add(std::string const &name, std::string const &filepath)
+    T const &add(std::string const &name, std::string const &path)
     {
         auto asset = std::make_unique<T>();
-        if (!asset->openFromFile(filepath))
+        if (!asset->openFromFile(path))
         {
-            throw std::runtime_error("Could not load asset \"" + name +
-                                     "\": " + filepath);
+            throw std::runtime_error("Could not open asset \"" + name +
+                                     "\": " + path);
         }
         collection[name] = std::move(asset);
         return *collection.at(name);
