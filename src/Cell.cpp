@@ -1,25 +1,30 @@
 #include "Cell.hpp"
 
+// cppcheck-suppress unusedFunction
 Cell::State Cell::getState() const
 {
     return state;
 }
 
+// cppcheck-suppress unusedFunction
 void Cell::setState(State newState)
 {
     state = newState;
 }
 
+// cppcheck-suppress unusedFunction
 Cell::Type Cell::getType() const
 {
     return type;
 }
 
+// cppcheck-suppress unusedFunction
 void Cell::setType(Cell::Type newType)
 {
     type = newType;
 }
 
+// cppcheck-suppress unusedFunction
 unsigned int Cell::getMineCount() const
 {
     if (type != Type::Empty)
@@ -29,6 +34,7 @@ unsigned int Cell::getMineCount() const
     return mineCount;
 }
 
+// cppcheck-suppress unusedFunction
 void Cell::setMineCount(unsigned int newMineCount)
 {
     if (type != Type::Empty)
