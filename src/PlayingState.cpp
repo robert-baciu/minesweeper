@@ -7,7 +7,7 @@
 #include "RandomMineGenerator.hpp"
 
 PlayingState::PlayingState(StateContext const &ctx, int cols, int rows)
-    : GameState(ctx), cols(cols), rows(rows), grid(cols, rows),
+    : State(ctx), cols(cols), rows(rows), grid(cols, rows),
       mineGenerator(getMineCount(), START_SAFE_DISTANCE),
       cellShape{{CELL_SIZE - CELL_PADDING, CELL_SIZE - CELL_PADDING}},
       cellText(ctx.assets.getMainFont())
@@ -84,14 +84,26 @@ void PlayingState::handleEvent(std::optional<sf::Event> const &event)
     }
 }
 
-std::unique_ptr<GameState> PlayingState::getNextState()
+std::optional<State::Transition> PlayingState::getTransition() const
 {
-    return nullptr;
+    if (requestedExit)
+    {
+        State::Transition transition;
+        transition.action = State::Action::Exit;
+        return transition;
+    }
+
+    return std::nullopt;
+}
+
+void PlayingState::requestExit()
+{
+    requestedExit = true;
 }
 
 void PlayingState::print(std::ostream &os) const
 {
-    os << "PlayingState";
+    os << "PlayingState[grid=" << grid << "]";
 }
 
 void PlayingState::draw(sf::RenderTarget &target, sf::RenderStates states) const

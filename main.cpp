@@ -3,10 +3,10 @@
 int main()
 {
     Game game;
-    while (game.isLooping())
+    while (game.isRunning())
     {
-        game.loop();
-        // std::cout << game << std::endl;
+        game.run();
+        std::cout << game << std::endl;
     }
     return 0;
 }

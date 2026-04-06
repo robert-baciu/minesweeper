@@ -11,10 +11,10 @@
 #include <SFML/Window/Mouse.hpp>
 
 #include "CellGrid.hpp"
-#include "GameState.hpp"
 #include "RandomMineGenerator.hpp"
+#include "State.hpp"
 
-class PlayingState : public GameState
+class PlayingState : public State
 {
   public:
     explicit PlayingState(StateContext const &ctx, int cols, int rows);
@@ -22,7 +22,9 @@ class PlayingState : public GameState
     void update(double dt) override;
     void handleEvent(std::optional<sf::Event> const &event) override;
 
-    std::unique_ptr<GameState> getNextState() override;
+    std::optional<Transition> getTransition() const override;
+
+    void requestExit() override;
 
     void print(std::ostream &os) const override;
 
@@ -56,4 +58,6 @@ class PlayingState : public GameState
 
     bool gameLost = false;
     bool firstReveal = true;
+
+    bool requestedExit = false;
 };

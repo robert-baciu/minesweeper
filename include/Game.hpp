@@ -6,37 +6,30 @@
 #include <SFML/Window/Keyboard.hpp>
 
 #include "AssetManager.hpp"
-#include "GameState.hpp"
 #include "GameWindow.hpp"
+#include "State.hpp"
 
 class Game
 {
   public:
     Game();
 
-    bool isLooping() const;
-    void loop();
+    bool isRunning() const;
+    void run();
 
     friend std::ostream &operator<<(std::ostream &os, Game const &game);
 
   private:
-    enum class Lifecycle
-    {
-        Running,
-        ExitRequested,
-        Exiting,
-        Stopped
-    };
-
     void handleEvents();
+
+    bool running = true;
+    bool requestedExit = false;
 
     AssetManager assets;
     GameWindow window;
     StateContext const stateContext;
 
-    Lifecycle lifecycle = Lifecycle::Running;
-
-    std::unique_ptr<GameState> currentState;
+    std::unique_ptr<State> currentState;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> prevUpdateTime;
 };
