@@ -1,12 +1,14 @@
 #include "PlayingState.hpp"
 
+#include <SFML/Window/Mouse.hpp>
 #include <utility>
 
 #include "Cell.hpp"
-#include "SFML/Window/Mouse.hpp"
+#include "RandomMineGenerator.hpp"
 
 PlayingState::PlayingState(StateContext const &ctx, int cols, int rows)
     : GameState(ctx), cols(cols), rows(rows), grid(cols, rows),
+      mineGenerator(getMineCount(), START_SAFE_DISTANCE),
       cellShape{{CELL_SIZE - CELL_PADDING, CELL_SIZE - CELL_PADDING}},
       cellText(ctx.assets.getMainFont())
 {
@@ -42,7 +44,7 @@ void PlayingState::handleEvent(std::optional<sf::Event> const &event)
             {
                 if (firstReveal)
                 {
-                    grid.generateMines(col, row, (cols * rows) / 8);
+                    mineGenerator.generate(grid, col, row);
                     reveal(col, row);
 
                     firstReveal = false;
@@ -162,6 +164,11 @@ void PlayingState::reveal(int col, int row)
             }
         }
     }
+}
+
+unsigned int PlayingState::getMineCount() const
+{
+    return (cols * rows) / 8;
 }
 
 sf::Color PlayingState::getCellColor(Cell::State state)

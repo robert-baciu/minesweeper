@@ -10,6 +10,9 @@ class CellGrid
   public:
     CellGrid(int cols, int rows);
 
+    int getCols() const;
+    int getRows() const;
+
     inline Cell *getCell(int col, int row);
     inline Cell const *getCell(int col, int row) const;
     std::vector<Cell> const &getCells() const;
@@ -17,9 +20,6 @@ class CellGrid
     std::vector<Cell *> getNeighbors(int col, int row);
 
     inline bool isInBounds(int col, int row) const;
-
-    void generateMines(int col, int row, unsigned int mineCount,
-                       unsigned int minDist = 2);
 
     friend std::ostream &operator<<(std::ostream &os, CellGrid const &grid);
 

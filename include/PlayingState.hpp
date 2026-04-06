@@ -12,6 +12,7 @@
 
 #include "CellGrid.hpp"
 #include "GameState.hpp"
+#include "RandomMineGenerator.hpp"
 
 class PlayingState : public GameState
 {
@@ -29,20 +30,26 @@ class PlayingState : public GameState
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
   private:
-    void reveal(int col, int row);
-
-    static sf::Color getCellColor(Cell::State state);
-    static sf::Color getCellTextColor(unsigned int mineCount);
-
     static constexpr float CELL_SIZE = 64.0f;
     static constexpr float CELL_PADDING = 2.0f;
     static constexpr auto CELL_TEXT_CHAR_SIZE =
         static_cast<unsigned int>(CELL_SIZE * 0.9f);
 
+    static constexpr unsigned int START_SAFE_DISTANCE = 2;
+
+    void reveal(int col, int row);
+
+    unsigned int getMineCount() const;
+
+    static sf::Color getCellColor(Cell::State state);
+    static sf::Color getCellTextColor(unsigned int mineCount);
+
     int cols;
     int rows;
 
     CellGrid grid;
+
+    RandomMineGenerator mineGenerator;
 
     mutable sf::RectangleShape cellShape;
     mutable sf::Text cellText;

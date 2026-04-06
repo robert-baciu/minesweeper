@@ -72,7 +72,9 @@ target_sources(${MAIN_EXECUTABLE_NAME}
     src/GameState.cpp
     src/GameWindow.cpp
     src/MenuState.cpp
+    src/MineGenerator.cpp
     src/PlayingState.cpp
+    src/RandomMineGenerator.cpp
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )
