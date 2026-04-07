@@ -1,6 +1,7 @@
 #include "PlayingState.hpp"
 
 #include <SFML/Window/Mouse.hpp>
+#include <stack>
 #include <utility>
 
 #include "Cell.hpp"
@@ -143,26 +144,35 @@ void PlayingState::draw(sf::RenderTarget &target, sf::RenderStates states) const
     }
 }
 
-// TODO: use a stack instead of recursion
-void PlayingState::reveal(int col, int row)
+void PlayingState::reveal(int startCol, int startRow)
 {
-    Cell *cell = grid.getCell(col, row);
-    if (!cell)
-    {
-        return;
-    }
+    std::stack<sf::Vector2i> stack;
 
-    if (cell->getState() == Cell::State::Revealed)
-    {
-        return;
-    }
+    stack.emplace(startCol, startRow);
 
-    cell->setState(Cell::State::Revealed);
-
-    // NOTE: I think it can even be proved that, here, the current cell is
-    // Empty, but I'll keep the check because I'm too tired for this
-    if (cell->getType() == Cell::Type::Empty && cell->getMineCount() == 0)
+    while (!stack.empty())
     {
+        std::cout << stack.size() << std::endl;
+
+        auto cellPos = stack.top();
+        stack.pop();
+
+        Cell *cell = grid.getCell(cellPos.x, cellPos.y);
+
+        if (!cell || cell->getState() == Cell::State::Revealed)
+        {
+            continue;
+        }
+
+        cell->setState(Cell::State::Revealed);
+
+        // getMineCount can be called because the current cell is not a Mine
+        // The flood fill will not propagate to a neighbor that could be a Mine
+        if (cell->getMineCount() > 0)
+        {
+            continue;
+        }
+
         for (int rowOff = -1; rowOff <= 1; rowOff++)
         {
             for (int colOff = -1; colOff <= 1; colOff++)
@@ -172,7 +182,7 @@ void PlayingState::reveal(int col, int row)
                     continue;
                 }
 
-                reveal(col + colOff, row + rowOff);
+                stack.emplace(cellPos.x + colOff, cellPos.y + rowOff);
             }
         }
     }
