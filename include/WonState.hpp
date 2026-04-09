@@ -7,12 +7,12 @@
 
 #include "State.hpp"
 
-class MenuState : public State
+class WonState : public State
 {
   public:
-    explicit MenuState(StateContext const &ctx);
+    explicit WonState(StateContext const &ctx);
 
-    void handleEvent(std::optional<sf::Event> const &event) override;
+    virtual void handleEvent(std::optional<sf::Event> const &event) override;
 
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
@@ -21,5 +21,5 @@ class MenuState : public State
     void print(std::ostream &os) const override;
 
   private:
-    bool startPlaying = false;
+    bool backToMainMenu = false;
 };

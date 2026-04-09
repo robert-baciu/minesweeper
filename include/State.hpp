@@ -29,8 +29,8 @@ class State : public sf::Drawable
     enum class Action
     {
         Change,
-        /* Push,
-        Pop, */
+        Push,
+        Pop,
         Exit
     };
 
@@ -42,26 +42,22 @@ class State : public sf::Drawable
 
     explicit State(StateContext const &ctx);
 
-    virtual void update(double dt) = 0;
-    virtual void handleEvent(std::optional<sf::Event> const &)
-    {
-    }
+    virtual void update(double dt);
 
-    virtual std::optional<Transition> getTransition() const = 0;
+    virtual void handleEvent(std::optional<sf::Event> const &event);
 
-    virtual void requestExit() = 0;
+    void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
-    friend std::ostream &operator<<(std::ostream &os, State const &state)
-    {
-        state.print(os);
-        return os;
-    }
+    [[nodiscard]] virtual std::optional<Transition> getTransition() const;
 
-  protected:
-    void draw(sf::RenderTarget &target,
-              sf::RenderStates states) const override = 0;
+    virtual void requestExit();
 
     virtual void print(std::ostream &os) const = 0;
 
+    friend std::ostream &operator<<(std::ostream &os, State const &state);
+
+  protected:
     StateContext const &ctx;
+
+    bool requestedExit = false;
 };

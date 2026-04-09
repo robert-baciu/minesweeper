@@ -17,6 +17,7 @@ class CellGrid
     inline Cell const *getCell(int col, int row) const;
     std::vector<Cell> const &getCells() const;
 
+    // TODO: forEachNeighbor
     std::vector<Cell *> getNeighbors(int col, int row);
 
     inline bool isInBounds(int col, int row) const;

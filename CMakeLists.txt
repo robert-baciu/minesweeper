@@ -69,11 +69,13 @@ target_sources(${MAIN_EXECUTABLE_NAME}
     src/CellGrid.cpp
     src/Game.cpp
     src/GameWindow.cpp
+    src/LostState.cpp
     src/MenuState.cpp
     src/MineGenerator.cpp
     src/PlayingState.cpp
     src/RandomMineGenerator.cpp
     src/State.cpp
+    src/WonState.cpp
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )

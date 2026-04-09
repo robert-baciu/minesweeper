@@ -5,7 +5,7 @@
 Game::Game() : stateContext{assets, window}
 {
     assets.load();
-    currentState = std::make_unique<MenuState>(stateContext);
+    states.push_back(std::make_unique<MenuState>(stateContext));
     prevUpdateTime = std::chrono::high_resolution_clock::now();
 }
 
@@ -16,17 +16,28 @@ bool Game::isRunning() const
 
 void Game::run()
 {
+    auto &currentState = states.back();
+
     if (auto transition = currentState->getTransition())
     {
         if (transition->action == State::Action::Change)
         {
-            currentState = std::move(transition->state);
+            states.clear();
+            states.push_back(std::move(transition->state));
+        }
+        else if (transition->action == State::Action::Push)
+        {
+            states.push_back(std::move(transition->state));
+        }
+        else if (transition->action == State::Action::Pop)
+        {
+            states.pop_back();
         }
         else if (transition->action == State::Action::Exit)
         {
             running = false;
-            return;
         }
+        return;
     }
 
     auto currentTime = std::chrono::high_resolution_clock::now();
@@ -39,7 +50,12 @@ void Game::run()
     currentState->update(dt);
 
     window.get().clear();
-    window.get().draw(*currentState);
+    for (auto &state : states)
+    {
+        // if (state->wantsDraw()) {
+        window.get().draw(*state);
+        // }
+    }
     window.get().display();
 }
 
@@ -67,21 +83,35 @@ void Game::handleEvents()
         {
             if (!requestedExit)
             {
-                currentState->requestExit();
+                states.back()->requestExit();
                 requestedExit = true;
             }
             continue;
         }
 
-        currentState->handleEvent(event);
+        states.back()->handleEvent(event);
     }
 }
 
 std::ostream &operator<<(std::ostream &os, Game const &game)
 {
     os << "Game[running=" << (game.running ? "yes" : "no")
-       << ", exitRequested=" << (game.requestedExit ? "yes" : "no")
-       << ", state=" << *game.currentState
-       << ", stateContext=" << game.stateContext << "]";
+       << ", exitRequested=" << (game.requestedExit ? "yes" : "no");
+
+    os << ", states={";
+    bool firstState = true;
+    for (auto const &state : game.states)
+    {
+        if (!firstState)
+        {
+            os << ", ";
+        }
+        os << *state;
+        firstState = false;
+    }
+
+    os << "}";
+
+    os << ", stateContext=" << game.stateContext << "]";
     return os;
 }

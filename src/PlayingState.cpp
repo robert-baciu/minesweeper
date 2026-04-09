@@ -5,7 +5,9 @@
 #include <utility>
 
 #include "Cell.hpp"
+#include "LostState.hpp"
 #include "RandomMineGenerator.hpp"
+#include "WonState.hpp"
 
 PlayingState::PlayingState(StateContext const &ctx, int cols, int rows)
     : State(ctx), cols(cols), rows(rows), grid(cols, rows),
@@ -13,6 +15,8 @@ PlayingState::PlayingState(StateContext const &ctx, int cols, int rows)
       cellShape{{CELL_SIZE - CELL_PADDING, CELL_SIZE - CELL_PADDING}},
       cellText(ctx.assets.getMainFont())
 {
+    totalSafeCells = cols * rows - getMineCount();
+
     float windowWidth = static_cast<float>(cols) * CELL_SIZE;
     float windowHeight = static_cast<float>(rows) * CELL_SIZE;
     sf::Vector2f windowSize = {windowWidth, windowHeight};
@@ -24,12 +28,13 @@ PlayingState::PlayingState(StateContext const &ctx, int cols, int rows)
     cellText.setCharacterSize(CELL_TEXT_CHAR_SIZE);
 }
 
-void PlayingState::update([[maybe_unused]] double dt)
-{
-}
-
 void PlayingState::handleEvent(std::optional<sf::Event> const &event)
 {
+    if (playingStatus != Status::Ongoing)
+    {
+        return;
+    }
+
     if (event->is<sf::Event::MouseButtonPressed>())
     {
         auto const *mouse = event->getIf<sf::Event::MouseButtonPressed>();
@@ -39,72 +44,21 @@ void PlayingState::handleEvent(std::optional<sf::Event> const &event)
         auto col = static_cast<int>(gridPos.x / CELL_SIZE);
         auto row = static_cast<int>(gridPos.y / CELL_SIZE);
 
-        if (Cell *cell = grid.getCell(col, row))
+        Cell *cell = grid.getCell(col, row);
+        if (!cell)
         {
-            if (mouse->button == sf::Mouse::Button::Left)
-            {
-                if (firstReveal)
-                {
-                    mineGenerator.generate(grid, col, row);
-                    reveal(col, row);
+            return;
+        }
 
-                    firstReveal = false;
-
-                    return;
-                }
-
-                if (cell->getState() == Cell::State::Unrevealed ||
-                    cell->getState() == Cell::State::Flagged)
-                {
-                    if (cell->getType() == Cell::Type::Empty)
-                    {
-                        reveal(col, row);
-                    }
-                    else if (cell->getType() == Cell::Type::Mine)
-                    {
-                        gameLost = true;
-                    }
-                }
-            }
-            else if (mouse->button == sf::Mouse::Button::Right)
-            {
-                if (cell->getState() == Cell::State::Unrevealed)
-                {
-                    cell->setState(Cell::State::Flagged);
-                }
-                else if (cell->getState() == Cell::State::Flagged)
-                {
-                    cell->setState(Cell::State::Unrevealed);
-                }
-            }
-            else if (mouse->button == sf::Mouse::Button::Middle)
-            {
-                std::cout << *cell << std::endl;
-            }
+        if (mouse->button == sf::Mouse::Button::Left)
+        {
+            revealCell(cell, col, row);
+        }
+        else if (mouse->button == sf::Mouse::Button::Right)
+        {
+            toggleFlag(cell);
         }
     }
-}
-
-std::optional<State::Transition> PlayingState::getTransition() const
-{
-    if (requestedExit)
-    {
-        State::Transition transition;
-        transition.action = State::Action::Exit;
-        return transition;
-    }
-
-    return std::nullopt;
-}
-
-void PlayingState::requestExit()
-{
-    requestedExit = true;
-}
-
-void PlayingState::print(std::ostream &os) const
-{
-    os << "PlayingState[grid=" << grid << "]";
 }
 
 void PlayingState::draw(sf::RenderTarget &target, sf::RenderStates states) const
@@ -144,7 +98,83 @@ void PlayingState::draw(sf::RenderTarget &target, sf::RenderStates states) const
     }
 }
 
-void PlayingState::reveal(int startCol, int startRow)
+std::optional<State::Transition> PlayingState::getTransition() const
+{
+    if (requestedExit)
+    {
+        State::Transition transition;
+        transition.action = State::Action::Exit;
+        return transition;
+    }
+
+    if (playingStatus == Status::Lost)
+    {
+        State::Transition transition;
+        transition.action = State::Action::Push;
+        transition.state = std::make_unique<LostState>(ctx);
+        return transition;
+    }
+
+    if (playingStatus == Status::Won)
+    {
+        State::Transition transition;
+        transition.action = State::Action::Push;
+        transition.state = std::make_unique<WonState>(ctx);
+        return transition;
+    }
+
+    return std::nullopt;
+}
+
+void PlayingState::print(std::ostream &os) const
+{
+    os << "PlayingState[grid=" << grid << "]";
+}
+
+void PlayingState::revealCell(Cell *cell, int col, int row)
+{
+    if (revealedCellCount == 0)
+    {
+        mineGenerator.generate(grid, col, row);
+        revealFlood(col, row);
+        if (revealedCellCount == totalSafeCells)
+        {
+            playingStatus = Status::Won;
+        }
+
+        return;
+    }
+
+    if (cell->getState() != Cell::State::Revealed)
+    {
+        if (cell->getType() == Cell::Type::Empty)
+        {
+            revealFlood(col, row);
+            if (revealedCellCount == totalSafeCells)
+            {
+                playingStatus = Status::Won;
+            }
+        }
+        else if (cell->getType() == Cell::Type::Mine)
+        {
+            playingStatus = Status::Lost;
+        }
+    }
+}
+
+void PlayingState::toggleFlag(Cell *cell)
+{
+    if (cell->getState() == Cell::State::Unrevealed)
+    {
+        cell->setState(Cell::State::Flagged);
+    }
+    else if (cell->getState() == Cell::State::Flagged)
+    {
+        cell->setState(Cell::State::Unrevealed);
+    }
+}
+
+void PlayingState::revealFlood(int startCol, int startRow)
 {
     std::stack<sf::Vector2i> stack;
 
@@ -165,6 +195,7 @@ void PlayingState::reveal(int startCol, int startRow)
         }
 
         cell->setState(Cell::State::Revealed);
+        revealedCellCount++;
 
         // getMineCount can be called because the current cell is not a Mine
         // The flood fill will not propagate to a neighbor that could be a Mine
@@ -198,11 +229,11 @@ sf::Color PlayingState::getCellColor(Cell::State state)
     switch (state)
     {
     case Cell::State::Unrevealed:
-        return {190, 190, 190};
-    case Cell::State::Revealed:
         return {127, 127, 127};
+    case Cell::State::Revealed:
+        return {190, 190, 190};
     case Cell::State::Flagged:
-        return {255, 255, 0};
+        return {190, 190, 0};
     default:
         std::unreachable();
     }

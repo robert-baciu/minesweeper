@@ -1,29 +1,35 @@
+#include "WonState.hpp"
+
+#include <optional>
+
 #include "MenuState.hpp"
+#include "SFML/Graphics/RectangleShape.hpp"
+#include "SFML/System/Vector2.hpp"
 
-#include <memory>
-
-#include "PlayingState.hpp"
-#include "State.hpp"
-
-MenuState::MenuState(StateContext const &ctx) : State(ctx)
+WonState::WonState(StateContext const &ctx) : State(ctx)
 {
 }
 
-void MenuState::handleEvent(std::optional<sf::Event> const &event)
+void WonState::handleEvent(std::optional<sf::Event> const &event)
 {
     if (event->is<sf::Event::KeyPressed>())
     {
         auto const *key = event->getIf<sf::Event::KeyPressed>();
         if (key->scancode == sf::Keyboard::Scancode::Enter)
         {
-            startPlaying = true;
+            backToMainMenu = true;
         }
     }
 }
 
-void MenuState::draw(sf::RenderTarget &target, sf::RenderStates states) const
+void WonState::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
-    sf::Text text{ctx.assets.getMainFont(), "MAIN MENU", 64};
+    sf::RectangleShape overlay;
+    overlay.setSize(sf::Vector2f{target.getSize()});
+    overlay.setFillColor(sf::Color{0, 51, 0, 153});
+    overlay.setPosition({0, 0});
+
+    sf::Text text{ctx.assets.getMainFont(), "YOU WON!", 64};
     sf::FloatRect textRect = text.getLocalBounds();
     float textScale = std::min(1.0f, static_cast<float>(target.getSize().x) *
                                          0.8f / textRect.size.x);
@@ -32,11 +38,11 @@ void MenuState::draw(sf::RenderTarget &target, sf::RenderStates states) const
     text.setOrigin({textRect.position.x + textRect.size.x / 2.0f,
                     textRect.position.y + textRect.size.y / 2.0f});
 
-    text.setPosition({static_cast<float>(target.getSize().x / 2.0f),
-                      static_cast<float>(target.getSize().y / 3.0f)});
+    text.setPosition({static_cast<float>(target.getSize().x) / 2.0f,
+                      static_cast<float>(target.getSize().y) / 3.0f});
 
-    sf::Text subtext{ctx.assets.getMainFont(), "Press Enter to start playing",
-                     64};
+    sf::Text subtext{ctx.assets.getMainFont(),
+                     "Press Enter to go back to main menu", 64};
     sf::FloatRect subtextRect = subtext.getLocalBounds();
 
     float subtextScale = std::min(1.0f, static_cast<float>(target.getSize().x) *
@@ -49,11 +55,12 @@ void MenuState::draw(sf::RenderTarget &target, sf::RenderStates states) const
     subtext.setPosition({static_cast<float>(target.getSize().x) / 2.0f,
                          static_cast<float>(target.getSize().y) * 2.0f / 3.0f});
 
+    target.draw(overlay, states);
     target.draw(text, states);
     target.draw(subtext, states);
 }
 
-std::optional<State::Transition> MenuState::getTransition() const
+std::optional<State::Transition> WonState::getTransition() const
 {
     if (requestedExit)
     {
@@ -62,19 +69,18 @@ std::optional<State::Transition> MenuState::getTransition() const
         return transition;
     }
 
-    if (startPlaying)
+    if (backToMainMenu)
     {
         State::Transition transition;
         transition.action = State::Action::Change;
-        // TODO: PlaySettings: cols, rows, mineCount, startSafeDistance
-        transition.state = std::make_unique<PlayingState>(ctx, 8, 8);
+        transition.state = std::make_unique<MenuState>(ctx);
         return transition;
     }
 
     return std::nullopt;
 }
 
-void MenuState::print(std::ostream &os) const
+void WonState::print(std::ostream &os) const
 {
-    os << "MenuState";
+    os << "WinState";
 }
