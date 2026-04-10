@@ -12,9 +12,13 @@ class GameWindow
 
     sf::RenderWindow &get();
 
+    sf::Vector2u getDefaultSize();
+
     friend std::ostream &operator<<(std::ostream &os,
                                     GameWindow const &gameWindow);
 
   private:
     sf::RenderWindow window;
+
+    sf::Vector2u defaultSize;
 };

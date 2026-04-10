@@ -16,7 +16,12 @@ bool Game::isRunning() const
 
 void Game::run()
 {
-    auto &currentState = states.back();
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    double dt =
+        std::chrono::duration<double>(currentTime - prevUpdateTime).count();
+    prevUpdateTime = currentTime;
+
+    auto const &currentState = states.back();
 
     if (auto transition = currentState->getTransition())
     {
@@ -40,11 +45,6 @@ void Game::run()
         return;
     }
 
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    double dt =
-        std::chrono::duration<double>(currentTime - prevUpdateTime).count();
-    prevUpdateTime = currentTime;
-
     handleEvents();
 
     currentState->update(dt);
@@ -52,17 +52,20 @@ void Game::run()
     window.get().clear();
     for (auto &state : states)
     {
-        // if (state->wantsDraw()) {
         window.get().draw(*state);
-        // }
     }
+    currentState->getGui().draw();
     window.get().display();
 }
 
 void Game::handleEvents()
 {
+    auto const &currentState = states.back();
+
     while (std::optional const event = window.get().pollEvent())
     {
+        currentState->getGui().handleEvent(*event);
+
         bool quit = false;
 
         if (event->is<sf::Event::Closed>())
@@ -83,13 +86,13 @@ void Game::handleEvents()
         {
             if (!requestedExit)
             {
-                states.back()->requestExit();
+                currentState->requestExit();
                 requestedExit = true;
             }
             continue;
         }
 
-        states.back()->handleEvent(event);
+        currentState->handleEvent(event);
     }
 }
 

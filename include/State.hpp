@@ -9,6 +9,7 @@
 
 #include "AssetManager.hpp"
 #include "GameWindow.hpp"
+#include "TGUI/Backend/SFML-Graphics.hpp"
 
 struct StateContext
 {
@@ -52,12 +53,16 @@ class State : public sf::Drawable
 
     virtual void requestExit();
 
+    tgui::Gui &getGui();
+
     virtual void print(std::ostream &os) const = 0;
 
     friend std::ostream &operator<<(std::ostream &os, State const &state);
 
   protected:
     StateContext const &ctx;
+
+    tgui::Gui gui;
 
     bool requestedExit = false;
 };

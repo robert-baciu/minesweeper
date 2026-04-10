@@ -2,6 +2,8 @@
 
 #include <optional>
 
+#include "TGUI/Font.hpp"
+
 std::ostream &operator<<(std::ostream &os, StateContext const &ctx)
 {
     os << "StateContext[assets=" << ctx.assets << ", window=" << ctx.window
@@ -9,8 +11,11 @@ std::ostream &operator<<(std::ostream &os, StateContext const &ctx)
     return os;
 }
 
-State::State(StateContext const &ctx) : ctx(ctx)
+State::State(StateContext const &ctx) : ctx{ctx}, gui{ctx.window.get()}
 {
+    auto font = tgui::Font("assets/fonts/VCR_OSD_MONO_1.001.ttf");
+    gui.setFont(font);
+    gui.setTextSize(32);
 }
 
 void State::update([[maybe_unused]] double dt)
@@ -42,6 +47,12 @@ std::optional<State::Transition> State::getTransition() const
 
     return std::nullopt;
 }
+
+tgui::Gui &State::getGui()
+{
+    return gui;
+}
+
 std::ostream &operator<<(std::ostream &os, State const &state)
 {
     state.print(os);

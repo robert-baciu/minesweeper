@@ -46,6 +46,16 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(SFML)
 
+set(BUILD_SHARED_LIBS OFF)
+set(TGUI_BACKEND SFML_GRAPHICS)
+
+FetchContent_Declare(
+  TGUI
+  GIT_REPOSITORY https://github.com/texus/TGUI
+  GIT_TAG 1.x
+)
+FetchContent_MakeAvailable(TGUI)
+
 ###############################################################################
 
 # external dependencies with find_package
@@ -95,7 +105,7 @@ target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE
     ext
 )
 target_link_libraries(${MAIN_EXECUTABLE_NAME} PRIVATE
-    SFML::Graphics SFML::Window SFML::System Threads::Threads
+    SFML::Graphics SFML::Window SFML::System TGUI::TGUI Threads::Threads
 )
 
 if(APPLE)
