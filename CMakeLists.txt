@@ -52,7 +52,8 @@ set(TGUI_BACKEND SFML_GRAPHICS)
 FetchContent_Declare(
   TGUI
   GIT_REPOSITORY https://github.com/texus/TGUI
-  GIT_TAG 1.x
+  GIT_TAG        v1.12.1
+  GIT_SHALLOW    1
 )
 FetchContent_MakeAvailable(TGUI)
 
