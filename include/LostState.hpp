@@ -3,7 +3,7 @@
 class LostState : public State
 {
   public:
-    explicit LostState(StateContext const &ctx);
+    explicit LostState(State::Context const &ctx);
 
     virtual void handleEvent(std::optional<sf::Event> const &event) override;
 

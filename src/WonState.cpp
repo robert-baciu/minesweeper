@@ -6,7 +6,7 @@
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/System/Vector2.hpp"
 
-WonState::WonState(StateContext const &ctx) : State(ctx)
+WonState::WonState(State::Context const &ctx) : State(ctx)
 {
 }
 
@@ -29,7 +29,7 @@ void WonState::draw(sf::RenderTarget &target, sf::RenderStates states) const
     overlay.setFillColor(sf::Color{0, 51, 0, 153});
     overlay.setPosition({0, 0});
 
-    sf::Text text{ctx.assets.getMainFont(), "YOU WON!", 64};
+    sf::Text text{ctx.getAssets().getMainFont(), "YOU WON!", 64};
     sf::FloatRect textRect = text.getLocalBounds();
     float textScale = std::min(1.0f, static_cast<float>(target.getSize().x) *
                                          0.8f / textRect.size.x);
@@ -41,7 +41,7 @@ void WonState::draw(sf::RenderTarget &target, sf::RenderStates states) const
     text.setPosition({static_cast<float>(target.getSize().x) / 2.0f,
                       static_cast<float>(target.getSize().y) / 3.0f});
 
-    sf::Text subtext{ctx.assets.getMainFont(),
+    sf::Text subtext{ctx.getAssets().getMainFont(),
                      "Press Enter to go back to main menu", 64};
     sf::FloatRect subtextRect = subtext.getLocalBounds();
 

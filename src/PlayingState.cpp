@@ -9,21 +9,21 @@
 #include "RandomMineGenerator.hpp"
 #include "WonState.hpp"
 
-PlayingState::PlayingState(StateContext const &ctx, int cols, int rows)
+PlayingState::PlayingState(State::Context const &ctx, int cols, int rows)
     : State(ctx), cols(cols), rows(rows), grid(cols, rows),
       totalMineCells((cols * rows) / 8),
       totalSafeCells(cols * rows - totalMineCells), revealedCellCount(0),
       mineGenerator(totalMineCells),
       cellShape{{CELL_SIZE - CELL_PADDING, CELL_SIZE - CELL_PADDING}},
-      cellText(ctx.assets.getMainFont())
+      cellText(ctx.getAssets().getMainFont())
 {
     float windowWidth = static_cast<float>(cols) * CELL_SIZE;
     float windowHeight = static_cast<float>(rows) * CELL_SIZE;
     sf::Vector2f windowSize = {windowWidth, windowHeight};
     sf::View view{sf::FloatRect{{0.0f, 0.0f}, {windowWidth, windowHeight}}};
 
-    ctx.window.get().setSize(sf::Vector2u{windowSize});
-    ctx.window.get().setView(view);
+    ctx.getWindow().get().setSize(sf::Vector2u{windowSize});
+    ctx.getWindow().get().setView(view);
 
     cellText.setCharacterSize(CELL_TEXT_CHAR_SIZE);
 }
@@ -39,7 +39,7 @@ void PlayingState::handleEvent(std::optional<sf::Event> const &event)
     {
         auto const *mouse = event->getIf<sf::Event::MouseButtonPressed>();
         sf::Vector2f gridPos =
-            ctx.window.get().mapPixelToCoords(mouse->position);
+            ctx.getWindow().get().mapPixelToCoords(mouse->position);
 
         auto col = static_cast<int>(gridPos.x / CELL_SIZE);
         auto row = static_cast<int>(gridPos.y / CELL_SIZE);

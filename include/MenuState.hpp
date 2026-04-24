@@ -11,7 +11,7 @@
 class MenuState : public State
 {
   public:
-    explicit MenuState(StateContext const &ctx);
+    explicit MenuState(State::Context const &ctx);
 
     [[nodiscard]] std::optional<Transition> getTransition() const override;
 

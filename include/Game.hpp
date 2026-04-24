@@ -27,7 +27,7 @@ class Game
 
     AssetManager assets;
     GameWindow window;
-    StateContext const stateContext;
+    State::Context const stateContext;
 
     std::vector<std::unique_ptr<State>> states;
 

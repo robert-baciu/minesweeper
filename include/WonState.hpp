@@ -10,7 +10,7 @@
 class WonState : public State
 {
   public:
-    explicit WonState(StateContext const &ctx);
+    explicit WonState(State::Context const &ctx);
 
     virtual void handleEvent(std::optional<sf::Event> const &event) override;
 

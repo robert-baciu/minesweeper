@@ -10,12 +10,12 @@
 #include "PlayingState.hpp"
 #include "State.hpp"
 
-MenuState::MenuState(StateContext const &ctx) : State(ctx)
+MenuState::MenuState(State::Context const &ctx) : State(ctx)
 {
     auto theme = tgui::Theme::create("assets/themes/Dark.txt");
     tgui::Theme::setDefault(theme);
 
-    ctx.window.get().setSize(ctx.window.getDefaultSize());
+    ctx.getWindow().get().setSize(ctx.getWindow().getDefaultSize());
 
     auto const elemWidth = "80%";
     auto const elemHeight = 50.0f;

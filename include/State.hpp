@@ -11,22 +11,32 @@
 #include "GameWindow.hpp"
 #include "TGUI/Backend/SFML-Graphics.hpp"
 
-struct StateContext
-{
-    AssetManager const &assets;
-    GameWindow &window;
-
-    explicit StateContext(AssetManager const &assets, GameWindow &window)
-        : assets(assets), window(window)
-    {
-    }
-};
-
-std::ostream &operator<<(std::ostream &os, StateContext const &ctx);
-
 class State : public sf::Drawable
 {
   public:
+    class Context
+    {
+      public:
+        explicit Context(AssetManager const &assets, GameWindow &window)
+            : assets(assets), window(window)
+        {
+        }
+
+        AssetManager const &getAssets() const
+        {
+            return assets;
+        }
+
+        GameWindow &getWindow() const
+        {
+            return window;
+        }
+
+      private:
+        AssetManager const &assets;
+        GameWindow &window;
+    };
+
     enum class Action
     {
         Change,
@@ -41,7 +51,7 @@ class State : public sf::Drawable
         std::unique_ptr<State> state;
     };
 
-    explicit State(StateContext const &ctx);
+    explicit State(State::Context const &ctx);
 
     virtual void update(double dt);
 
@@ -60,9 +70,11 @@ class State : public sf::Drawable
     friend std::ostream &operator<<(std::ostream &os, State const &state);
 
   protected:
-    StateContext const &ctx;
+    State::Context const &ctx;
 
     tgui::Gui gui;
 
     bool requestedExit = false;
 };
+
+std::ostream &operator<<(std::ostream &os, State::Context const &ctx);

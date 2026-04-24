@@ -17,7 +17,7 @@
 class PlayingState : public State
 {
   public:
-    explicit PlayingState(StateContext const &ctx, int cols, int rows);
+    explicit PlayingState(State::Context const &ctx, int cols, int rows);
 
     void handleEvent(std::optional<sf::Event> const &event) override;
 
