@@ -40,13 +40,11 @@ class PlayingState : public State
     static constexpr auto CELL_TEXT_CHAR_SIZE =
         static_cast<unsigned int>(CELL_SIZE * 0.9f);
 
+    void onCellLeftClick(Cell *cell, int col, int row);
+    static void onCellRightClick(Cell *cell);
 
-    void revealCell(Cell *cell, int col, int row);
-    static void toggleFlag(Cell *cell);
-
-    void revealFlood(int col, int row);
-
-    unsigned int getMineCount() const;
+    void chordingReveal(Cell *cell, int col, int row);
+    void floodReveal(int startCol, int startRow);
 
     static sf::Color getCellColor(Cell::State state);
     static sf::Color getCellTextColor(unsigned int mineCount);
@@ -56,8 +54,9 @@ class PlayingState : public State
 
     CellGrid grid;
 
+    unsigned int totalMineCells;
     unsigned int totalSafeCells;
-    unsigned int revealedCellCount = 0;
+    unsigned int revealedCellCount;
 
     RandomMineGenerator mineGenerator;
 

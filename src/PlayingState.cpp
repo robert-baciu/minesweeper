@@ -11,12 +11,12 @@
 
 PlayingState::PlayingState(StateContext const &ctx, int cols, int rows)
     : State(ctx), cols(cols), rows(rows), grid(cols, rows),
-      mineGenerator(getMineCount()),
+      totalMineCells((cols * rows) / 8),
+      totalSafeCells(cols * rows - totalMineCells), revealedCellCount(0),
+      mineGenerator(totalMineCells),
       cellShape{{CELL_SIZE - CELL_PADDING, CELL_SIZE - CELL_PADDING}},
       cellText(ctx.assets.getMainFont())
 {
-    totalSafeCells = cols * rows - getMineCount();
-
     float windowWidth = static_cast<float>(cols) * CELL_SIZE;
     float windowHeight = static_cast<float>(rows) * CELL_SIZE;
     sf::Vector2f windowSize = {windowWidth, windowHeight};
@@ -52,11 +52,11 @@ void PlayingState::handleEvent(std::optional<sf::Event> const &event)
 
         if (mouse->button == sf::Mouse::Button::Left)
         {
-            revealCell(cell, col, row);
+            onCellLeftClick(cell, col, row);
         }
         else if (mouse->button == sf::Mouse::Button::Right)
         {
-            toggleFlag(cell);
+            onCellRightClick(cell);
         }
     }
 }
@@ -131,12 +131,14 @@ void PlayingState::print(std::ostream &os) const
     os << "PlayingState[grid=" << grid << "]";
 }
 
-void PlayingState::revealCell(Cell *cell, int col, int row)
+void PlayingState::onCellLeftClick(Cell *cell, int col, int row)
 {
-    if (revealedCellCount == 0)
+    if (revealedCellCount == 0) // First left click
     {
         mineGenerator.generate(grid, col, row);
-        revealFlood(col, row);
+
+        floodReveal(col, row);
+
         if (revealedCellCount == totalSafeCells)
         {
             playingStatus = Status::Won;
@@ -149,7 +151,8 @@ void PlayingState::revealCell(Cell *cell, int col, int row)
     {
         if (cell->getType() == Cell::Type::Empty)
         {
-            revealFlood(col, row);
+            floodReveal(col, row);
+
             if (revealedCellCount == totalSafeCells)
             {
                 playingStatus = Status::Won;
@@ -160,21 +163,89 @@ void PlayingState::revealCell(Cell *cell, int col, int row)
             playingStatus = Status::Lost;
         }
     }
+    else
+    {
+        chordingReveal(cell, col, row);
+    }
 }
 
-void PlayingState::toggleFlag(Cell *cell)
+void PlayingState::onCellRightClick(Cell *cell)
 {
-    if (cell->getState() == Cell::State::Unrevealed)
+    if (cell->getState() == Cell::State::Hidden)
     {
         cell->setState(Cell::State::Flagged);
     }
     else if (cell->getState() == Cell::State::Flagged)
     {
-        cell->setState(Cell::State::Unrevealed);
+        cell->setState(Cell::State::Hidden);
     }
 }
 
-void PlayingState::revealFlood(int startCol, int startRow)
+void PlayingState::chordingReveal(Cell *cell, int col, int row)
+{
+    unsigned int mineCount = cell->getMineCount();
+    unsigned int flagCount = 0;
+
+    for (int colOff = -1; colOff <= 1; colOff++)
+    {
+        for (int rowOff = -1; rowOff <= 1; rowOff++)
+        {
+            Cell *neighbor = grid.getCell(col + colOff, row + rowOff);
+
+            if (neighbor && neighbor->getState() == Cell::State::Flagged)
+            {
+                flagCount++;
+            }
+        }
+    }
+
+    if (flagCount != mineCount)
+    {
+        return;
+    }
+
+    for (int colOff = -1; colOff <= 1; colOff++)
+    {
+        for (int rowOff = -1; rowOff <= 1; rowOff++)
+        {
+            if (colOff == 0 && rowOff == 0)
+            {
+                continue;
+            }
+
+            int neighborCol = col + colOff;
+            int neighborRow = row + rowOff;
+            Cell *neighbor = grid.getCell(neighborCol, neighborRow);
+
+            if (!neighbor || neighbor->getState() != Cell::State::Hidden)
+            {
+                continue;
+            }
+
+            if (neighbor->getType() == Cell::Type::Mine)
+            {
+                playingStatus = Status::Lost;
+                return;
+            }
+
+            if (neighbor->getMineCount() == 0)
+            {
+                floodReveal(neighborCol, neighborRow);
+            }
+            else
+            {
+                neighbor->setState(Cell::State::Revealed);
+                revealedCellCount++;
+                if (revealedCellCount == totalSafeCells)
+                {
+                    playingStatus = Status::Won;
+                }
+            }
+        }
+    }
+}
+
+void PlayingState::floodReveal(int startCol, int startRow)
 {
     std::stack<sf::Vector2i> stack;
 
@@ -189,7 +260,7 @@ void PlayingState::revealFlood(int startCol, int startRow)
 
         Cell *cell = grid.getCell(cellPos.x, cellPos.y);
 
-        if (!cell || cell->getState() == Cell::State::Revealed)
+        if (!cell || cell->getState() != Cell::State::Hidden)
         {
             continue;
         }
@@ -198,7 +269,8 @@ void PlayingState::revealFlood(int startCol, int startRow)
         revealedCellCount++;
 
         // getMineCount can be called because the current cell is not a Mine
-        // The flood fill will not propagate to a neighbor that could be a Mine
+        // Flood fill reveal will not propagate to a neighbor that could be a
+        // Mine, only chording reveal can
         if (cell->getMineCount() > 0)
         {
             continue;
@@ -219,16 +291,11 @@ void PlayingState::revealFlood(int startCol, int startRow)
     }
 }
 
-unsigned int PlayingState::getMineCount() const
-{
-    return (cols * rows) / 8;
-}
-
 sf::Color PlayingState::getCellColor(Cell::State state)
 {
     switch (state)
     {
-    case Cell::State::Unrevealed:
+    case Cell::State::Hidden:
         return {127, 127, 127};
     case Cell::State::Revealed:
         return {190, 190, 190};

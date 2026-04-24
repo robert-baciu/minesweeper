@@ -7,7 +7,7 @@ class Cell
   public:
     enum class State
     {
-        Unrevealed,
+        Hidden,
         Revealed,
         Flagged
     };
@@ -30,7 +30,7 @@ class Cell
     friend std::ostream &operator<<(std::ostream &os, Cell const &cell);
 
   private:
-    State state = State::Unrevealed;
+    State state = State::Hidden;
     Type type = Type::Empty;
 
     unsigned int mineCount = 0;

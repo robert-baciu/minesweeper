@@ -49,8 +49,8 @@ std::ostream &operator<<(std::ostream &os, Cell const &cell)
     os << "Cell[state=";
     switch (cell.state)
     {
-    case Cell::State::Unrevealed:
-        os << "Unrevealed";
+    case Cell::State::Hidden:
+        os << "Hidden";
         break;
     case Cell::State::Revealed:
         os << "Revealed";
