@@ -34,6 +34,7 @@ class PlayingState : public State
         Won
     };
 
+  private:
     static constexpr float CELL_SIZE = 64.0f;
     static constexpr float CELL_PADDING = 2.0f;
     static constexpr auto CELL_TEXT_CHAR_SIZE =
