@@ -2,9 +2,8 @@
 
 #include <random>
 
-RandomMineGenerator::RandomMineGenerator(unsigned int mineCount,
-                                         unsigned int safeDistance)
-    : MineGenerator(mineCount, safeDistance)
+RandomMineGenerator::RandomMineGenerator(unsigned int mineCount)
+    : MineGenerator(mineCount)
 {
 }
 
@@ -24,9 +23,7 @@ void RandomMineGenerator::generate(CellGrid &grid, int startCol, int startRow)
         int col = randIndex % cols;
         int row = randIndex / cols;
 
-        auto deltaCol = static_cast<unsigned int>(std::abs(startCol - col));
-        auto deltaRow = static_cast<unsigned int>(std::abs(startRow - row));
-        if (deltaCol < safeDistance && deltaRow < safeDistance)
+        if (col == startCol && row == startRow)
         {
             continue;
         }

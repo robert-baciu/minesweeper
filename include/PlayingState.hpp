@@ -40,7 +40,6 @@ class PlayingState : public State
     static constexpr auto CELL_TEXT_CHAR_SIZE =
         static_cast<unsigned int>(CELL_SIZE * 0.9f);
 
-    static constexpr unsigned int START_SAFE_DISTANCE = 2;
 
     void revealCell(Cell *cell, int col, int row);
     static void toggleFlag(Cell *cell);

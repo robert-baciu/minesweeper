@@ -11,7 +11,7 @@
 
 PlayingState::PlayingState(StateContext const &ctx, int cols, int rows)
     : State(ctx), cols(cols), rows(rows), grid(cols, rows),
-      mineGenerator(getMineCount(), START_SAFE_DISTANCE),
+      mineGenerator(getMineCount()),
       cellShape{{CELL_SIZE - CELL_PADDING, CELL_SIZE - CELL_PADDING}},
       cellText(ctx.assets.getMainFont())
 {

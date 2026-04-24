@@ -5,7 +5,7 @@
 class MineGenerator
 {
   public:
-    MineGenerator(unsigned int mineCount, unsigned int safeDistance);
+    explicit MineGenerator(unsigned int mineCount);
 
     virtual ~MineGenerator() = default;
 
@@ -13,5 +13,4 @@ class MineGenerator
 
   protected:
     unsigned int mineCount;
-    unsigned int safeDistance;
 };
