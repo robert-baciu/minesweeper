@@ -13,7 +13,6 @@ PlayingState::PlayingState(State::Context const &ctx, int cols, int rows)
     : State(ctx), cols(cols), rows(rows), grid(cols, rows),
       totalMineCells((cols * rows) / 8),
       totalSafeCells(cols * rows - totalMineCells), revealedCellCount(0),
-      mineGenerator(totalMineCells),
       cellShape{{CELL_SIZE - CELL_PADDING, CELL_SIZE - CELL_PADDING}},
       cellText(ctx.getAssets().getMainFont())
 {
@@ -133,9 +132,10 @@ void PlayingState::print(std::ostream &os) const
 
 void PlayingState::onCellLeftClick(Cell *cell, int col, int row)
 {
-    if (revealedCellCount == 0) // First left click
+    if (revealedCellCount == 0)
     {
-        mineGenerator.generate(grid, col, row);
+        RandomMineGenerator generator{grid, totalMineCells};
+        generator.generate(col, row);
 
         floodReveal(col, row);
 

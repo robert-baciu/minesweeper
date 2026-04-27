@@ -58,8 +58,6 @@ class PlayingState : public State
     unsigned int totalSafeCells;
     unsigned int revealedCellCount;
 
-    RandomMineGenerator mineGenerator;
-
     mutable sf::RectangleShape cellShape;
     mutable sf::Text cellText;
 
