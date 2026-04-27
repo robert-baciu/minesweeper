@@ -56,6 +56,8 @@ class State : public sf::Drawable
 
     explicit State(State::Context const &ctx);
 
+    ~State() override = default;
+
     virtual void update(double dt);
 
     virtual void handleEvent(std::optional<sf::Event> const &event);
