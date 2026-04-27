@@ -32,6 +32,9 @@ class State : public sf::Drawable
             return window;
         }
 
+        friend std::ostream &operator<<(std::ostream &os,
+                                        State::Context const &ctx);
+
       private:
         AssetManager const &assets;
         GameWindow &window;
@@ -76,5 +79,3 @@ class State : public sf::Drawable
 
     bool requestedExit = false;
 };
-
-std::ostream &operator<<(std::ostream &os, State::Context const &ctx);

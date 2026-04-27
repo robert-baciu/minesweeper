@@ -4,13 +4,6 @@
 
 #include "TGUI/Font.hpp"
 
-std::ostream &operator<<(std::ostream &os, State::Context const &ctx)
-{
-    os << "State::Context[assets=" << ctx.getAssets()
-       << ", window=" << ctx.getWindow() << "]";
-    return os;
-}
-
 State::State(State::Context const &ctx) : ctx{ctx}, gui{ctx.getWindow().get()}
 {
     auto font = tgui::Font("assets/fonts/VCR_OSD_MONO_1.001.ttf");
@@ -56,5 +49,12 @@ tgui::Gui &State::getGui()
 std::ostream &operator<<(std::ostream &os, State const &state)
 {
     state.print(os);
+    return os;
+}
+
+std::ostream &operator<<(std::ostream &os, State::Context const &ctx)
+{
+    os << "State::Context[assets=" << ctx.getAssets()
+       << ", window=" << ctx.getWindow() << "]";
     return os;
 }
