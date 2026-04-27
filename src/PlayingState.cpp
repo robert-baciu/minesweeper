@@ -253,8 +253,6 @@ void PlayingState::floodReveal(int startCol, int startRow)
 
     while (!stack.empty())
     {
-        std::cout << stack.size() << std::endl;
-
         auto cellPos = stack.top();
         stack.pop();
 
