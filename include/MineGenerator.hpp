@@ -5,12 +5,17 @@
 class MineGenerator
 {
   public:
-    explicit MineGenerator(unsigned int mineCount);
+    MineGenerator(CellGrid &grid, unsigned int mineCount)
+        : grid(grid), mineCount(mineCount)
+    {
+    }
 
     virtual ~MineGenerator() = default;
 
-    virtual void generate(CellGrid &grid, int startCol, int startRow) = 0;
+    virtual void generate(int startCol, int startRow) = 0;
 
   protected:
+    CellGrid &grid;
+
     unsigned int mineCount;
 };

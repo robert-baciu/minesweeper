@@ -2,12 +2,12 @@
 
 #include <random>
 
-RandomMineGenerator::RandomMineGenerator(unsigned int mineCount)
-    : MineGenerator(mineCount)
+RandomMineGenerator::RandomMineGenerator(CellGrid &grid, unsigned int mineCount)
+    : MineGenerator{grid, mineCount}
 {
 }
 
-void RandomMineGenerator::generate(CellGrid &grid, int startCol, int startRow)
+void RandomMineGenerator::generate(int startCol, int startRow)
 {
     int cols = grid.getCols();
     int rows = grid.getRows();
@@ -54,4 +54,11 @@ void RandomMineGenerator::generate(CellGrid &grid, int startCol, int startRow)
             }
         }
     }
+}
+
+std::ostream &operator<<(std::ostream &os, RandomMineGenerator const &gen)
+{
+    os << "RandomMineGenerator[grid=" << gen.grid
+       << ", mineCount=" << gen.mineCount << "]";
+    return os;
 }

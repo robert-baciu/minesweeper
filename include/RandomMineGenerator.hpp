@@ -5,7 +5,10 @@
 class RandomMineGenerator : public MineGenerator
 {
   public:
-    explicit RandomMineGenerator(unsigned int mineCount);
+    RandomMineGenerator(CellGrid &grid, unsigned int mineCount);
 
-    void generate(CellGrid &grid, int startCol, int startRow) override;
+    void generate(int startCol, int startRow) override;
+
+    friend std::ostream &operator<<(std::ostream &os,
+                                    RandomMineGenerator const &gen);
 };
