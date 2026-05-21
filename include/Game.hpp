@@ -31,5 +31,5 @@ class Game
 
     std::vector<std::unique_ptr<State>> states;
 
-    std::chrono::time_point<std::chrono::high_resolution_clock> prevUpdateTime;
+    std::chrono::time_point<std::chrono::high_resolution_clock> prevTime;
 };

@@ -12,7 +12,7 @@ class MineGenerator
 
     virtual ~MineGenerator() = default;
 
-    virtual void generate(int startCol, int startRow) = 0;
+    virtual void generateSafeStart(int startCol, int startRow) = 0;
 
   protected:
     CellGrid &grid;

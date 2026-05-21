@@ -6,7 +6,7 @@ Game::Game() : stateContext{assets, window}
 {
     assets.load();
     states.push_back(std::make_unique<MenuState>(stateContext));
-    prevUpdateTime = std::chrono::high_resolution_clock::now();
+    prevTime = std::chrono::high_resolution_clock::now();
 }
 
 bool Game::isRunning() const
@@ -17,9 +17,8 @@ bool Game::isRunning() const
 void Game::run()
 {
     auto currentTime = std::chrono::high_resolution_clock::now();
-    double dt =
-        std::chrono::duration<double>(currentTime - prevUpdateTime).count();
-    prevUpdateTime = currentTime;
+    double dt = std::chrono::duration<double>(currentTime - prevTime).count();
+    prevTime = currentTime;
 
     auto const &currentState = states.back();
 

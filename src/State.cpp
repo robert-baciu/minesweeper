@@ -29,7 +29,7 @@ void State::requestExit()
     requestedExit = true;
 }
 
-std::optional<State::Transition> State::getTransition() const
+std::optional<State::Transition> State::getTransition()
 {
     if (requestedExit)
     {

@@ -1,8 +1,11 @@
 #pragma once
 
 #include <memory>
+#include <SFML/Graphics/Font.hpp>
 #include <string>
 #include <unordered_map>
+
+#include "AssetLoadError.hpp"
 
 template <typename T> class AssetCollection
 {
@@ -50,11 +53,23 @@ T const &AssetCollection<T>::add(std::string const &name,
                                  std::string const &path)
 {
     auto asset = std::make_unique<T>();
-    if (!asset->openFromFile(path))
+
+    bool success;
+    if constexpr (std::is_same_v<T, sf::Font>)
     {
-        throw std::runtime_error("Could not open asset \"" + name +
-                                 "\": " + path);
+        success = asset->openFromFile(path);
     }
+    else
+    {
+        // Maybe, maybe, maybe...
+        success = asset->loadFromFile(path);
+    }
+
+    if (!success)
+    {
+        throw AssetLoadError(path, name);
+    }
+
     collection[name] = std::move(asset);
     return *collection.at(name);
 }

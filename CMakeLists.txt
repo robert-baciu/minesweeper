@@ -83,6 +83,7 @@ target_sources(${MAIN_EXECUTABLE_NAME}
     src/LostState.cpp
     src/MenuState.cpp
     src/PlayingState.cpp
+    src/PlaySettings.cpp
     src/RandomMineGenerator.cpp
     src/State.cpp
     src/WonState.cpp

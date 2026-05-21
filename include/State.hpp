@@ -22,12 +22,12 @@ class State : public sf::Drawable
         {
         }
 
-        AssetManager const &getAssets() const
+        [[nodiscard]] AssetManager const &getAssets() const
         {
             return assets;
         }
 
-        GameWindow &getWindow() const
+        [[nodiscard]] GameWindow &getWindow() const
         {
             return window;
         }
@@ -64,7 +64,7 @@ class State : public sf::Drawable
 
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
-    [[nodiscard]] virtual std::optional<Transition> getTransition() const;
+    [[nodiscard]] virtual std::optional<Transition> getTransition();
 
     virtual void requestExit();
 

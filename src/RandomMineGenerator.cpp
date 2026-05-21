@@ -1,5 +1,6 @@
 #include "RandomMineGenerator.hpp"
 
+#include <iostream>
 #include <random>
 
 RandomMineGenerator::RandomMineGenerator(CellGrid &grid, unsigned int mineCount)
@@ -7,7 +8,7 @@ RandomMineGenerator::RandomMineGenerator(CellGrid &grid, unsigned int mineCount)
 {
 }
 
-void RandomMineGenerator::generate(int startCol, int startRow)
+void RandomMineGenerator::generateSafeStart(int startCol, int startRow)
 {
     int cols = grid.getCols();
     int rows = grid.getRows();
@@ -29,31 +30,32 @@ void RandomMineGenerator::generate(int startCol, int startRow)
         }
 
         Cell *cell = grid.getCell(col, row);
-        if (cell->getType() == Cell::Type::Empty)
+        if (!cell->isMine())
         {
-            cell->setType(Cell::Type::Mine);
+            cell->setMine();
             placed++;
         }
     }
 
-    for (int row = 0; row < rows; row++)
-    {
-        for (int col = 0; col < cols; col++)
+    grid.all(
+        [this](int col, int row)
         {
-            if (Cell *cell = grid.getCell(col, row);
-                cell->getType() == Cell::Type::Mine)
+            Cell *cell = grid.getCell(col, row);
+            if (!cell->isMine())
             {
-                auto neighbors = grid.getNeighbors(col, row);
-                for (auto const &neighbor : neighbors)
-                {
-                    if (neighbor->getType() == Cell::Type::Empty)
-                    {
-                        neighbor->setMineCount(neighbor->getMineCount() + 1);
-                    }
-                }
+                return;
             }
-        }
-    }
+
+            // clang-format off
+            grid.neighbors(col, row, [this](int neighborCol, int neighborRow) {
+                Cell *neighbor = grid.getCell(neighborCol, neighborRow);
+                if (!neighbor->isMine())
+                {
+                    neighbor->setAdjacentMines(neighbor->getAdjacentMines() + 1);
+                }
+            });
+            // clang-format on
+        });
 }
 
 std::ostream &operator<<(std::ostream &os, RandomMineGenerator const &gen)

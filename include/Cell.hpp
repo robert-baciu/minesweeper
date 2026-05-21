@@ -5,33 +5,21 @@
 class Cell
 {
   public:
-    enum class State
-    {
-        Hidden,
-        Revealed,
-        Flagged
-    };
+    [[nodiscard]] unsigned int getAdjacentMines() const;
+    [[nodiscard]] bool isMine() const;
+    [[nodiscard]] bool isRevealed() const;
+    [[nodiscard]] bool isFlagged() const;
 
-    enum class Type
-    {
-        Empty,
-        Mine
-    };
-
-    State getState() const;
-    void setState(State newState);
-
-    Type getType() const;
-    void setType(Type type);
-
-    unsigned int getMineCount() const;
-    void setMineCount(unsigned int newMineCount);
+    void setAdjacentMines(unsigned int adjacentMines);
+    void setMine();
+    void setRevealed();
+    void setFlagged(bool flagged);
 
     friend std::ostream &operator<<(std::ostream &os, Cell const &cell);
 
   private:
-    State state = State::Hidden;
-    Type type = Type::Empty;
-
-    unsigned int mineCount = 0;
+    unsigned int adjacentMines = 0;
+    bool mine = false;
+    bool revealed = false;
+    bool flagged = false;
 };

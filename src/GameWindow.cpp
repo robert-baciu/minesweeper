@@ -1,7 +1,8 @@
 #include "GameWindow.hpp"
 
+#include <SFML/System/Vector2.hpp>
+
 #include "GameConfig.hpp"
-#include "SFML/System/Vector2.hpp"
 
 GameWindow::GameWindow()
 {

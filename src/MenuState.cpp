@@ -2,12 +2,14 @@
 
 #include <memory>
 #include <TGUI/Loading/Theme.hpp>
+#include <TGUI/Widgets/Button.hpp>
 #include <TGUI/Widgets/ComboBox.hpp>
-#include <TGUI/Widgets/EditBox.hpp>
 #include <TGUI/Widgets/Group.hpp>
 #include <TGUI/Widgets/Label.hpp>
 
+#include "InvalidDifficultyError.hpp"
 #include "PlayingState.hpp"
+#include "PlaySettings.hpp"
 #include "State.hpp"
 
 MenuState::MenuState(State::Context const &ctx) : State(ctx)
@@ -25,43 +27,43 @@ MenuState::MenuState(State::Context const &ctx) : State(ctx)
     title->setPosition("50% - (width / 2)", 40.0f);
     gui.add(title, "title");
 
-    auto difficulty = tgui::ComboBox::create();
-    difficulty->setSize(elemWidth, elemHeight);
-    difficulty->setPosition("50% - (width / 2)", "title.bottom + 40");
-    difficulty->addItem("Easy");
-    difficulty->addItem("Medium");
-    difficulty->addItem("Hard");
-    difficulty->addItem("Extreme");
-    difficulty->addItem("Custom");
-    difficulty->setSelectedItemByIndex(0);
-    gui.add(difficulty, "difficulty");
+    diffBox = tgui::ComboBox::create();
+    diffBox->setSize(elemWidth, elemHeight);
+    diffBox->setPosition("50% - (width / 2)", "title.bottom + 40");
+    diffBox->addItem("Easy");
+    diffBox->addItem("Medium");
+    diffBox->addItem("Hard");
+    diffBox->addItem("Extreme");
+    diffBox->addItem("Custom");
+    diffBox->setSelectedItemByIndex(0);
+    gui.add(diffBox, "difficulty");
 
     auto customGroup = tgui::Group::create();
     auto customGroupSpacing = 10.0f;
     customGroup->setSize(elemWidth, elemHeight * 3 + customGroupSpacing * 2);
     customGroup->setPosition("50% - (width / 2)", "difficulty.bottom + 10");
 
-    auto widthEdit = tgui::EditBox::create();
-    widthEdit->setDefaultText("Width");
-    widthEdit->setInputValidator(tgui::EditBox::Validator::UInt);
-    widthEdit->setSize("100%", elemHeight);
-    widthEdit->setPosition(0, 0);
+    colsEdit = tgui::EditBox::create();
+    colsEdit->setDefaultText("Columns");
+    colsEdit->setInputValidator(tgui::EditBox::Validator::UInt);
+    colsEdit->setSize("100%", elemHeight);
+    colsEdit->setPosition(0, 0);
 
-    auto heightEdit = tgui::EditBox::create();
-    heightEdit->setDefaultText("Height");
-    heightEdit->setInputValidator(tgui::EditBox::Validator::UInt);
-    heightEdit->setSize("100%", elemHeight);
-    heightEdit->setPosition(0, elemHeight + customGroupSpacing);
+    rowsEdit = tgui::EditBox::create();
+    rowsEdit->setDefaultText("Rows");
+    rowsEdit->setInputValidator(tgui::EditBox::Validator::UInt);
+    rowsEdit->setSize("100%", elemHeight);
+    rowsEdit->setPosition(0, elemHeight + customGroupSpacing);
 
-    auto mineEdit = tgui::EditBox::create();
-    mineEdit->setDefaultText("Mines");
-    mineEdit->setInputValidator(tgui::EditBox::Validator::UInt);
-    mineEdit->setSize("100%", elemHeight);
-    mineEdit->setPosition(0, (elemHeight + customGroupSpacing) * 2);
+    densityEdit = tgui::EditBox::create();
+    densityEdit->setDefaultText("Mine density [0-100]");
+    densityEdit->setInputValidator(tgui::EditBox::Validator::UInt);
+    densityEdit->setSize("100%", elemHeight);
+    densityEdit->setPosition(0, (elemHeight + customGroupSpacing) * 2);
 
-    customGroup->add(widthEdit);
-    customGroup->add(heightEdit);
-    customGroup->add(mineEdit);
+    customGroup->add(colsEdit);
+    customGroup->add(rowsEdit);
+    customGroup->add(densityEdit);
 
     auto playButton = tgui::Button::create("PLAY");
     playButton->setSize(elemWidth, elemHeight);
@@ -73,7 +75,7 @@ MenuState::MenuState(State::Context const &ctx) : State(ctx)
     exitButton->setPosition("50% - (width / 2)", "playButton.bottom + 10");
     gui.add(exitButton, "exitButton");
 
-    difficulty->onItemSelect(
+    diffBox->onItemSelect(
         [this, customGroup, playButton](tgui::String const &item)
         {
             if (item == "Custom")
@@ -101,7 +103,54 @@ MenuState::MenuState(State::Context const &ctx) : State(ctx)
     exitButton->onPress([this]() { requestedExit = true; });
 }
 
-std::optional<State::Transition> MenuState::getTransition() const
+PlaySettings MenuState::getPlaySettings() const
+{
+    int cols, rows;
+    float mineDensity;
+
+    std::string const diff = diffBox->getSelectedItem().toStdString();
+    if (diff == "Easy")
+    {
+        cols = rows = 8;
+        mineDensity = 0.1f;
+    }
+    else if (diff == "Medium")
+    {
+        cols = rows = 12;
+        mineDensity = 0.1f;
+    }
+    else if (diff == "Hard")
+    {
+        cols = rows = 16;
+        mineDensity = 0.125f;
+    }
+    else if (diff == "Extreme")
+    {
+        cols = rows = 16;
+        mineDensity = 0.15f;
+    }
+    else if (diff == "Custom")
+    {
+        // TODO: Validation
+        cols = std::stoi(colsEdit->getText().toStdString());
+        rows = std::stoi(rowsEdit->getText().toStdString());
+        mineDensity = static_cast<float>(
+                          std::stoul(densityEdit->getText().toStdString())) /
+                      100.0f;
+    }
+    else
+    {
+        throw InvalidDifficultyError(diff);
+    }
+
+    return PlaySettings::Builder()
+        .withCols(cols)
+        .withRows(rows)
+        .withMineDensity(mineDensity)
+        .build();
+}
+
+std::optional<State::Transition> MenuState::getTransition()
 {
     if (requestedExit)
     {
@@ -114,8 +163,8 @@ std::optional<State::Transition> MenuState::getTransition() const
     {
         State::Transition transition;
         transition.action = State::Action::Change;
-        // TODO: PlaySettings: cols, rows, mineCount, startSafeDistance
-        transition.state = std::make_unique<PlayingState>(ctx, 16, 8);
+        transition.state =
+            std::make_unique<PlayingState>(ctx, getPlaySettings());
         return transition;
     }
 

@@ -1,74 +1,95 @@
 #include "Cell.hpp"
 
-// cppcheck-suppress unusedFunction
-Cell::State Cell::getState() const
-{
-    return state;
-}
+#include "CellError.hpp"
 
-// cppcheck-suppress unusedFunction
-void Cell::setState(State newState)
+unsigned int Cell::getAdjacentMines() const
 {
-    state = newState;
-}
-
-// cppcheck-suppress unusedFunction
-Cell::Type Cell::getType() const
-{
-    return type;
-}
-
-// cppcheck-suppress unusedFunction
-void Cell::setType(Cell::Type newType)
-{
-    type = newType;
-}
-
-// cppcheck-suppress unusedFunction
-unsigned int Cell::getMineCount() const
-{
-    if (type != Type::Empty)
+    if (mine == true)
     {
-        throw std::runtime_error("getMineCount() called on a non-empty cell");
+        throw MineCellError("Cell::getAdjacentMines()");
     }
-    return mineCount;
+
+    return adjacentMines;
 }
 
-// cppcheck-suppress unusedFunction
-void Cell::setMineCount(unsigned int newMineCount)
+bool Cell::isMine() const
 {
-    if (type != Type::Empty)
+    return mine;
+}
+
+bool Cell::isRevealed() const
+{
+    return revealed;
+}
+
+bool Cell::isFlagged() const
+{
+    return flagged;
+}
+
+void Cell::setAdjacentMines(unsigned int adjacentMines)
+{
+    if (mine == true)
     {
-        throw std::runtime_error("setMineCount() called on a non-empty cell");
+        throw MineCellError("Cell::setAdjacentMines()");
     }
-    mineCount = newMineCount;
+
+    this->adjacentMines = adjacentMines;
+}
+
+void Cell::setMine()
+{
+    if (revealed == true)
+    {
+        throw RevealedCellError("Cell::setMine()");
+    }
+
+    mine = true;
+    flagged = false;
+}
+
+void Cell::setRevealed()
+{
+    if (mine == true)
+    {
+        throw MineCellError("Cell::setRevealed()");
+    }
+
+    revealed = true;
+    flagged = false;
+}
+
+void Cell::setFlagged(bool flagged)
+{
+    if (revealed == true)
+    {
+        throw RevealedCellError("Cell::setFlagged()");
+    }
+
+    this->flagged = flagged;
 }
 
 std::ostream &operator<<(std::ostream &os, Cell const &cell)
 {
-    os << "Cell[state=";
-    switch (cell.state)
+    os << "Cell[";
+    if (cell.mine == true)
     {
-    case Cell::State::Hidden:
-        os << "Hidden";
-        break;
-    case Cell::State::Revealed:
-        os << "Revealed";
-        break;
-    case Cell::State::Flagged:
-        os << "Flagged";
-        break;
-    }
-
-    os << ", type=";
-    switch (cell.type)
-    {
-    case Cell::Type::Empty:
-        os << "Empty";
-        break;
-    case Cell::Type::Mine:
         os << "Mine";
-        break;
+    }
+    else if (cell.revealed == false)
+    {
+        if (cell.flagged == false)
+        {
+            os << "Unrevealed";
+        }
+        else
+        {
+            os << "Flagged";
+        }
+    }
+    else
+    {
+        os << "Revealed";
     }
     os << "]";
     return os;
