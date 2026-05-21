@@ -1,74 +1,68 @@
 #include "Cell.hpp"
 
-// cppcheck-suppress unusedFunction
-Cell::State Cell::getState() const
+// TODO: Custom exceptions
+unsigned int Cell::getAdjacentMines() const
 {
-    return state;
+    return adjacentMines;
 }
 
-// cppcheck-suppress unusedFunction
-void Cell::setState(State newState)
+bool Cell::isMine() const
 {
-    state = newState;
+    return mine;
 }
 
-// cppcheck-suppress unusedFunction
-Cell::Type Cell::getType() const
+bool Cell::isRevealed() const
 {
-    return type;
+    return revealed;
 }
 
-// cppcheck-suppress unusedFunction
-void Cell::setType(Cell::Type newType)
+bool Cell::isFlagged() const
 {
-    type = newType;
+    return flagged;
 }
 
-// cppcheck-suppress unusedFunction
-unsigned int Cell::getMineCount() const
+void Cell::setAdjacentMines(unsigned int adjacentMines)
 {
-    if (type != Type::Empty)
-    {
-        throw std::runtime_error("getMineCount() called on a non-empty cell");
-    }
-    return mineCount;
+    this->adjacentMines = adjacentMines;
 }
 
-// cppcheck-suppress unusedFunction
-void Cell::setMineCount(unsigned int newMineCount)
+void Cell::setMine()
 {
-    if (type != Type::Empty)
-    {
-        throw std::runtime_error("setMineCount() called on a non-empty cell");
-    }
-    mineCount = newMineCount;
+    mine = true;
+}
+
+void Cell::setRevealed()
+{
+    revealed = true;
+    flagged = false;
+}
+
+void Cell::setFlagged(bool flagged)
+{
+    this->flagged = flagged;
 }
 
 std::ostream &operator<<(std::ostream &os, Cell const &cell)
 {
-    os << "Cell[state=";
-    switch (cell.state)
+    os << "Cell[";
+    if (cell.mine == true)
     {
-    case Cell::State::Hidden:
-        os << "Hidden";
-        break;
-    case Cell::State::Revealed:
-        os << "Revealed";
-        break;
-    case Cell::State::Flagged:
-        os << "Flagged";
-        break;
-    }
-
-    os << ", type=";
-    switch (cell.type)
-    {
-    case Cell::Type::Empty:
-        os << "Empty";
-        break;
-    case Cell::Type::Mine:
         os << "Mine";
-        break;
+    }
+    else if (cell.revealed == false)
+    {
+        if (cell.flagged == false)
+        {
+            os << "Unrevealed";
+        }
+        else
+        {
+            os << "Flagged";
+        }
+    }
+    else
+    {
+        os << "Revealed";
     }
     os << "]";
     return os;

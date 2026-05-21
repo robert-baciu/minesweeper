@@ -10,17 +10,16 @@ class CellGrid
   public:
     CellGrid(int cols, int rows);
 
-    int getCols() const;
-    int getRows() const;
+    [[nodiscard]] int getCols() const;
+    [[nodiscard]] int getRows() const;
 
-    inline Cell *getCell(int col, int row);
-    inline Cell const *getCell(int col, int row) const;
-    std::vector<Cell> const &getCells() const;
+    [[nodiscard]] Cell *getCell(int col, int row);
+    [[nodiscard]] Cell const *getCell(int col, int row) const;
+    [[nodiscard]] std::vector<Cell> const &getCells() const;
 
-    // TODO: forEachNeighbor
+    // void forEachNeighbor(int col, int row,
+    //                      std::function<void(Cell *)> const &callback);
     std::vector<Cell *> getNeighbors(int col, int row);
-
-    inline bool isInBounds(int col, int row) const;
 
     friend std::ostream &operator<<(std::ostream &os, CellGrid const &grid);
 
@@ -28,19 +27,6 @@ class CellGrid
     int const cols;
     int const rows;
     std::vector<Cell> cells;
+
+    [[nodiscard]] bool isInBounds(int col, int row) const;
 };
-
-inline Cell *CellGrid::getCell(int col, int row)
-{
-    return isInBounds(col, row) ? &cells[col + row * cols] : nullptr;
-}
-
-inline Cell const *CellGrid::getCell(int col, int row) const
-{
-    return isInBounds(col, row) ? &cells[col + row * cols] : nullptr;
-}
-
-inline bool CellGrid::isInBounds(int col, int row) const
-{
-    return col >= 0 && col < cols && row >= 0 && row < rows;
-}

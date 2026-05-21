@@ -29,9 +29,9 @@ void RandomMineGenerator::generate(int startCol, int startRow)
         }
 
         Cell *cell = grid.getCell(col, row);
-        if (cell->getType() == Cell::Type::Empty)
+        if (!cell->isMine())
         {
-            cell->setType(Cell::Type::Mine);
+            cell->setMine();
             placed++;
         }
     }
@@ -40,15 +40,23 @@ void RandomMineGenerator::generate(int startCol, int startRow)
     {
         for (int col = 0; col < cols; col++)
         {
-            if (Cell *cell = grid.getCell(col, row);
-                cell->getType() == Cell::Type::Mine)
+            Cell *cell = grid.getCell(col, row);
+            if (cell->isMine())
             {
                 auto neighbors = grid.getNeighbors(col, row);
+                // clang-format off
+                // grid.forEachNeighbor(col, row, [](Cell *neighbor) {
+                //     if (!neighbor->isMine()) {
+                //         neighbor->setAdjacentMines(neighbor->getAdjacentMines() + 1);
+                //     }
+                // });
+                // clang-format on
                 for (auto const &neighbor : neighbors)
                 {
-                    if (neighbor->getType() == Cell::Type::Empty)
+                    if (!neighbor->isMine())
                     {
-                        neighbor->setMineCount(neighbor->getMineCount() + 1);
+                        neighbor->setAdjacentMines(
+                            neighbor->getAdjacentMines() + 1);
                     }
                 }
             }

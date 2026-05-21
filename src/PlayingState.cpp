@@ -12,7 +12,7 @@
 PlayingState::PlayingState(State::Context const &ctx, int cols, int rows)
     : State(ctx), cols(cols), rows(rows), grid(cols, rows),
       totalMineCells((cols * rows) / 8),
-      totalSafeCells(cols * rows - totalMineCells), revealedCellCount(0),
+      safeCellCount(cols * rows - totalMineCells), revealedCellCount(0),
       cellShape{{CELL_SIZE - CELL_PADDING, CELL_SIZE - CELL_PADDING}},
       cellText(ctx.getAssets().getMainFont())
 {
@@ -74,20 +74,19 @@ void PlayingState::draw(sf::RenderTarget &target, sf::RenderStates states) const
                 sf::Vector2f{static_cast<float>(col), static_cast<float>(row)} *
                 CELL_SIZE);
 
-            cellShape.setFillColor(getCellColor(cell->getState()));
+            cellShape.setFillColor(getCellColor(cell));
 
             target.draw(cellShape, states);
 
-            if (cell->getState() == Cell::State::Revealed &&
-                cell->getType() == Cell::Type::Empty &&
-                cell->getMineCount() > 0)
+            if (cell->isRevealed() && !cell->isMine() &&
+                cell->getAdjacentMines() == 0)
             {
-                auto mineCount = cell->getMineCount();
-                cellText.setString(std::to_string(mineCount));
+                auto adjacentMines = cell->getAdjacentMines();
+                cellText.setString(std::to_string(adjacentMines));
                 cellText.setOrigin(cellText.getLocalBounds().getCenter());
                 cellText.setPosition(
                     sf::Vector2f{CELL_SIZE / 2.0f, CELL_SIZE / 2.0f});
-                cellText.setFillColor(getCellTextColor(mineCount));
+                cellText.setFillColor(getCellTextColor(adjacentMines));
 
                 target.draw(cellText, states);
             }
@@ -130,6 +129,7 @@ void PlayingState::print(std::ostream &os) const
     os << "PlayingState[grid=" << grid << "]";
 }
 
+// TODO: uniformize, pass only col and row
 void PlayingState::onCellLeftClick(Cell *cell, int col, int row)
 {
     if (revealedCellCount == 0)
@@ -139,7 +139,7 @@ void PlayingState::onCellLeftClick(Cell *cell, int col, int row)
 
         floodReveal(col, row);
 
-        if (revealedCellCount == totalSafeCells)
+        if (revealedCellCount == safeCellCount)
         {
             playingStatus = Status::Won;
         }
@@ -147,20 +147,20 @@ void PlayingState::onCellLeftClick(Cell *cell, int col, int row)
         return;
     }
 
-    if (cell->getState() != Cell::State::Revealed)
+    if (!cell->isRevealed())
     {
-        if (cell->getType() == Cell::Type::Empty)
+        if (cell->isMine())
+        {
+            playingStatus = Status::Lost;
+        }
+        else
         {
             floodReveal(col, row);
 
-            if (revealedCellCount == totalSafeCells)
+            if (revealedCellCount == safeCellCount)
             {
                 playingStatus = Status::Won;
             }
-        }
-        else if (cell->getType() == Cell::Type::Mine)
-        {
-            playingStatus = Status::Lost;
         }
     }
     else
@@ -171,19 +171,17 @@ void PlayingState::onCellLeftClick(Cell *cell, int col, int row)
 
 void PlayingState::onCellRightClick(Cell *cell)
 {
-    if (cell->getState() == Cell::State::Hidden)
+    if (cell->isRevealed())
     {
-        cell->setState(Cell::State::Flagged);
+        return;
     }
-    else if (cell->getState() == Cell::State::Flagged)
-    {
-        cell->setState(Cell::State::Hidden);
-    }
+
+    cell->setFlagged(!cell->isFlagged());
 }
 
 void PlayingState::chordingReveal(Cell *cell, int col, int row)
 {
-    unsigned int mineCount = cell->getMineCount();
+    unsigned int mineCount = cell->getAdjacentMines();
     unsigned int flagCount = 0;
 
     for (int colOff = -1; colOff <= 1; colOff++)
@@ -192,7 +190,7 @@ void PlayingState::chordingReveal(Cell *cell, int col, int row)
         {
             Cell *neighbor = grid.getCell(col + colOff, row + rowOff);
 
-            if (neighbor && neighbor->getState() == Cell::State::Flagged)
+            if (neighbor && neighbor->isFlagged())
             {
                 flagCount++;
             }
@@ -217,26 +215,26 @@ void PlayingState::chordingReveal(Cell *cell, int col, int row)
             int neighborRow = row + rowOff;
             Cell *neighbor = grid.getCell(neighborCol, neighborRow);
 
-            if (!neighbor || neighbor->getState() != Cell::State::Hidden)
+            if (!neighbor || neighbor->isRevealed() || neighbor->isFlagged())
             {
                 continue;
             }
 
-            if (neighbor->getType() == Cell::Type::Mine)
+            if (neighbor->isMine())
             {
                 playingStatus = Status::Lost;
                 return;
             }
 
-            if (neighbor->getMineCount() == 0)
+            if (neighbor->getAdjacentMines() == 0)
             {
                 floodReveal(neighborCol, neighborRow);
             }
             else
             {
-                neighbor->setState(Cell::State::Revealed);
+                neighbor->setRevealed();
                 revealedCellCount++;
-                if (revealedCellCount == totalSafeCells)
+                if (revealedCellCount == safeCellCount)
                 {
                     playingStatus = Status::Won;
                 }
@@ -251,6 +249,8 @@ void PlayingState::floodReveal(int startCol, int startRow)
 
     stack.emplace(startCol, startRow);
 
+    std::cout << "DEBUG\n";
+
     while (!stack.empty())
     {
         auto cellPos = stack.top();
@@ -258,18 +258,17 @@ void PlayingState::floodReveal(int startCol, int startRow)
 
         Cell *cell = grid.getCell(cellPos.x, cellPos.y);
 
-        if (!cell || cell->getState() != Cell::State::Hidden)
+        if (!cell || cell->isRevealed() || cell->isFlagged())
         {
             continue;
         }
 
-        cell->setState(Cell::State::Revealed);
+        cell->setRevealed();
         revealedCellCount++;
 
-        // getMineCount can be called because the current cell is not a Mine
         // Flood fill reveal will not propagate to a neighbor that could be a
         // Mine, only chording reveal can
-        if (cell->getMineCount() > 0)
+        if (cell->getAdjacentMines() > 0)
         {
             continue;
         }
@@ -289,18 +288,20 @@ void PlayingState::floodReveal(int startCol, int startRow)
     }
 }
 
-sf::Color PlayingState::getCellColor(Cell::State state)
+sf::Color PlayingState::getCellColor(Cell const *cell)
 {
-    switch (state)
+    if (cell->isFlagged())
     {
-    case Cell::State::Hidden:
-        return {127, 127, 127};
-    case Cell::State::Revealed:
-        return {190, 190, 190};
-    case Cell::State::Flagged:
         return {190, 190, 0};
-    default:
-        std::unreachable();
+    }
+
+    if (cell->isRevealed())
+    {
+        return {190, 190, 190};
+    }
+    else
+    {
+        return {127, 127, 127};
     }
 }
 

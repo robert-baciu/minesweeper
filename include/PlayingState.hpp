@@ -11,7 +11,6 @@
 #include <SFML/Window/Mouse.hpp>
 
 #include "CellGrid.hpp"
-#include "RandomMineGenerator.hpp"
 #include "State.hpp"
 
 class PlayingState : public State
@@ -46,7 +45,7 @@ class PlayingState : public State
     void chordingReveal(Cell *cell, int col, int row);
     void floodReveal(int startCol, int startRow);
 
-    static sf::Color getCellColor(Cell::State state);
+    static sf::Color getCellColor(Cell const *cell);
     static sf::Color getCellTextColor(unsigned int mineCount);
 
     int cols;
@@ -55,7 +54,7 @@ class PlayingState : public State
     CellGrid grid;
 
     unsigned int totalMineCells;
-    unsigned int totalSafeCells;
+    unsigned int safeCellCount;
     unsigned int revealedCellCount;
 
     mutable sf::RectangleShape cellShape;

@@ -15,10 +15,40 @@ int CellGrid::getRows() const
     return rows;
 }
 
+Cell *CellGrid::getCell(int col, int row)
+{
+    return isInBounds(col, row) ? &cells[col + row * cols] : nullptr;
+}
+
+Cell const *CellGrid::getCell(int col, int row) const
+{
+    return isInBounds(col, row) ? &cells[col + row * cols] : nullptr;
+}
+
 std::vector<Cell> const &CellGrid::getCells() const
 {
     return cells;
 }
+
+// void CellGrid::forEachNeighbor(int col, int row,
+//                                std::function<void(Cell *)> const &callback)
+// {
+//     for (int rowOff = -1; rowOff <= 1; rowOff++)
+//     {
+//         for (int colOff = -1; colOff <= 1; colOff++)
+//         {
+//             if (colOff == 0 && rowOff == 0)
+//             {
+//                 continue;
+//             }
+//
+//             if (Cell *neighbor = getCell(col + colOff, row + rowOff))
+//             {
+//                 callback(neighbor);
+//             }
+//         }
+//     }
+// }
 
 std::vector<Cell *> CellGrid::getNeighbors(int col, int row)
 {
@@ -48,4 +78,9 @@ std::ostream &operator<<(std::ostream &os, CellGrid const &grid)
 {
     os << "Grid[cols=" << grid.cols << ", rows=" << grid.rows << "]";
     return os;
+}
+
+bool CellGrid::isInBounds(int col, int row) const
+{
+    return col >= 0 && col < cols && row >= 0 && row < rows;
 }
