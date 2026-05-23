@@ -17,9 +17,14 @@ void WonState::handleEvent(std::optional<sf::Event> const &event)
         auto const *key = event->getIf<sf::Event::KeyPressed>();
         if (key->scancode == sf::Keyboard::Scancode::Enter)
         {
-            backToMenu = true;
+            transitionToMenu = true;
         }
     }
+}
+
+void WonState::update(double dt)
+{
+    revealTime += dt;
 }
 
 void WonState::draw(sf::RenderTarget &target, sf::RenderStates states) const
@@ -31,7 +36,7 @@ void WonState::draw(sf::RenderTarget &target, sf::RenderStates states) const
         {
             Cell const *cell = grid.getCell(col, row);
 
-            if (cell->isMine() && !cell->isFlagged())
+            if (cell->isMine() && (col + row >= 0.1 * revealTime))
             {
                 auto cellPos =
                     sf::Vector2f{sf::Vector2i{col, row}} * CellGrid::CELL_SIZE;
@@ -59,7 +64,7 @@ std::optional<State::Transition> WonState::getTransition()
         return transition;
     }
 
-    if (backToMenu)
+    if (transitionToMenu)
     {
         State::Transition transition;
         transition.action = State::Action::Change;

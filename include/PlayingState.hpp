@@ -11,6 +11,7 @@
 #include <SFML/Window/Mouse.hpp>
 
 #include "CellGrid.hpp"
+#include "PlayingHeader.hpp"
 #include "PlaySettings.hpp"
 #include "State.hpp"
 
@@ -55,4 +56,6 @@ class PlayingState : public State
     Status playingStatus = Status::Ongoing;
 
     sf::Vector2i detonatedPos;
+
+    PlayingHeader header;
 };

@@ -15,6 +15,8 @@ class WonState : public State
 
     void handleEvent(std::optional<sf::Event> const &event) override;
 
+    void update(double dt) override;
+
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
     [[nodiscard]] std::optional<Transition> getTransition() override;
@@ -26,5 +28,7 @@ class WonState : public State
 
     CellGrid grid;
 
-    bool backToMenu = false;
+    bool transitionToMenu = false;
+
+    double revealTime = 0.0f;
 };

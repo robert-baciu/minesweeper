@@ -31,12 +31,15 @@ void LostState::update(double dt)
 {
     totalTime += dt;
 
-    float const speed = 5.0f;
-    auto const wave = static_cast<float>(std::sin(totalTime * speed));
-    float const normalized = (wave + 1.0f) / 2.0f;
-    auto const alpha = static_cast<uint8_t>(0.0f + (normalized * 31.0f));
+    float overlaySpeed = 5.0f;
+    float max_alpha = 31;
 
-    overlay.setFillColor({255, 0, 0, alpha});
+    auto wave = static_cast<float>(std::sin(totalTime * overlaySpeed));
+    float normalized = (wave + 1.0f) / 2.0f;
+    auto alpha = static_cast<uint8_t>(0.0f + (normalized * max_alpha));
+    auto overlayColor = sf::Color{255, 0, 0, alpha};
+
+    overlay.setFillColor(overlayColor);
 }
 
 void LostState::draw(sf::RenderTarget &target, sf::RenderStates states) const

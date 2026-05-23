@@ -112,7 +112,7 @@ PlaySettings MenuState::getPlaySettings() const
     if (diff == "Easy")
     {
         cols = rows = 8;
-        mineDensity = 0.1f;
+        mineDensity = 0.05f;
     }
     else if (diff == "Medium")
     {

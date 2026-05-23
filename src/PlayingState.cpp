@@ -15,7 +15,8 @@ PlayingState::PlayingState(State::Context const &ctx, PlaySettings settings)
       totalCellCount{static_cast<unsigned int>(cols * rows)},
       mineCellCount{static_cast<unsigned int>(
           static_cast<float>(totalCellCount) * settings.getMineDensity())},
-      safeCellCount{totalCellCount - mineCellCount}, revealedCellCount(0)
+      safeCellCount{totalCellCount - mineCellCount}, revealedCellCount(0),
+      header{ctx}
 {
     float windowWidth = static_cast<float>(cols) * CellGrid::CELL_SIZE;
     float windowHeight = static_cast<float>(rows) * CellGrid::CELL_SIZE;
@@ -61,7 +62,11 @@ void PlayingState::handleEvent(std::optional<sf::Event> const &event)
 
 void PlayingState::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
-    target.draw(grid, states);
+    target.draw(header, states);
+
+    auto gridStates = states;
+    gridStates.transform.translate({0, PlayingHeader::HEIGHT});
+    target.draw(grid, gridStates);
 }
 
 std::optional<State::Transition> PlayingState::getTransition()
