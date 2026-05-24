@@ -5,17 +5,15 @@
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Window/Keyboard.hpp>
 
-#include "CellGrid.hpp"
 #include "State.hpp"
+#include "WindowLayout.hpp"
 
 class WonState : public State
 {
   public:
-    explicit WonState(State::Context const &ctx, CellGrid grid);
+    WonState(State::Context const &ctx, WindowLayout layout);
 
     void handleEvent(std::optional<sf::Event> const &event) override;
-
-    void update(double dt) override;
 
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
@@ -26,9 +24,10 @@ class WonState : public State
   private:
     static constexpr sf::Color MINE_COLOR = {15, 15, 15};
 
-    CellGrid grid;
-
     bool transitionToMenu = false;
 
-    double revealTime = 0.0f;
+    WindowLayout layout;
+
+    sf::Sprite flagSprite;
+    sf::Sprite mineSprite;
 };

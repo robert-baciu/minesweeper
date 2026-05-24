@@ -9,10 +9,10 @@
 
 #include "InvalidDifficultyError.hpp"
 #include "PlayingState.hpp"
-#include "PlaySettings.hpp"
 #include "State.hpp"
 
-MenuState::MenuState(State::Context const &ctx) : State(ctx)
+MenuState::MenuState(State::Context const &ctx)
+    : State(ctx)
 {
     auto theme = tgui::Theme::create("assets/themes/Dark.txt");
     tgui::Theme::setDefault(theme);
@@ -103,7 +103,7 @@ MenuState::MenuState(State::Context const &ctx) : State(ctx)
     exitButton->onPress([this]() { requestedExit = true; });
 }
 
-PlaySettings MenuState::getPlaySettings() const
+DifficultySettings MenuState::getPlaySettings() const
 {
     int cols, rows;
     float mineDensity;
@@ -112,7 +112,7 @@ PlaySettings MenuState::getPlaySettings() const
     if (diff == "Easy")
     {
         cols = rows = 8;
-        mineDensity = 0.05f;
+        mineDensity = 0.1f;
     }
     else if (diff == "Medium")
     {
@@ -131,7 +131,8 @@ PlaySettings MenuState::getPlaySettings() const
     }
     else if (diff == "Custom")
     {
-        // TODO: Validation
+        // TODO: Validation + min values for cols, rows so header doesn't
+        // underflow
         cols = std::stoi(colsEdit->getText().toStdString());
         rows = std::stoi(rowsEdit->getText().toStdString());
         mineDensity = static_cast<float>(
@@ -143,7 +144,7 @@ PlaySettings MenuState::getPlaySettings() const
         throw InvalidDifficultyError(diff);
     }
 
-    return PlaySettings::Builder()
+    return DifficultySettings::Builder()
         .withCols(cols)
         .withRows(rows)
         .withMineDensity(mineDensity)

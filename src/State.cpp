@@ -4,7 +4,9 @@
 
 #include "TGUI/Font.hpp"
 
-State::State(State::Context const &ctx) : ctx{ctx}, gui{ctx.getWindow().get()}
+State::State(State::Context const &ctx)
+    : ctx{ctx},
+      gui{ctx.getWindow().get()}
 {
     auto font = tgui::Font("assets/fonts/VCR_OSD_MONO_1.001.ttf");
     gui.setFont(font);

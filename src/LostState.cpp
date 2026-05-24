@@ -1,18 +1,21 @@
 #include "LostState.hpp"
 
-#include <cmath>
 #include <memory>
 #include <optional>
 #include <SFML/Graphics/RenderStates.hpp>
 
 #include "MenuState.hpp"
+#include "WindowLayout.hpp"
 
-LostState::LostState(State::Context const &ctx, CellGrid grid,
+LostState::LostState(State::Context const &ctx, WindowLayout layout,
                      sf::Vector2i detonatedPos)
-    : State{ctx}, grid{std::move(grid)}, detonatedPos{detonatedPos},
-      flagSprite{ctx.getAssets().getTexture("flag")}
+    : State{ctx},
+      layout(std::move(layout)),
+      detonatedPos{detonatedPos},
+      flagSprite{ctx.getAssets().getTexture("flag")},
+      mineSprite(ctx.getAssets().getTexture("mine"))
 {
-    overlay.setSize(sf::Vector2f{ctx.getWindow().get().getSize()});
+    this->layout.header.setSmiley(ctx.getAssets().getTexture("smiley-lost"));
 }
 
 void LostState::handleEvent(std::optional<sf::Event> const &event)
@@ -27,34 +30,24 @@ void LostState::handleEvent(std::optional<sf::Event> const &event)
     }
 }
 
-void LostState::update(double dt)
-{
-    totalTime += dt;
-
-    float overlaySpeed = 5.0f;
-    float max_alpha = 31;
-
-    auto wave = static_cast<float>(std::sin(totalTime * overlaySpeed));
-    float normalized = (wave + 1.0f) / 2.0f;
-    auto alpha = static_cast<uint8_t>(0.0f + (normalized * max_alpha));
-    auto overlayColor = sf::Color{255, 0, 0, alpha};
-
-    overlay.setFillColor(overlayColor);
-}
-
 void LostState::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
+    target.setView(layout.headerView);
+    target.draw(layout.header, states);
 
-    target.draw(grid, states);
+    std::cout << "Header drawn\n";
+
+    target.setView(layout.gridView);
+    target.draw(layout.grid, states);
 
     sf::RectangleShape highlight{
         {CellGrid::CELL_SIZE - CellGrid::CELL_PADDING,
          CellGrid::CELL_SIZE - CellGrid::CELL_PADDING}};
 
-    grid.all(
+    layout.grid.all(
         [&](int col, int row)
         {
-            Cell const *cell = grid.getCell(col, row);
+            Cell const *cell = layout.grid.getCell(col, row);
             auto cellPos =
                 sf::Vector2f{sf::Vector2i{col, row}} * CellGrid::CELL_SIZE;
             sf::RenderStates cellStates = states;
@@ -84,17 +77,8 @@ void LostState::draw(sf::RenderTarget &target, sf::RenderStates states) const
                 target.draw(highlight, cellStates);
             }
 
-            float const mineRadius =
-                (CellGrid::CELL_SIZE - CellGrid::CELL_PADDING) / 3.0f;
-            sf::CircleShape mine{mineRadius};
-            mine.setOrigin({mineRadius, mineRadius});
-            mine.setPosition(
-                {CellGrid::CELL_SIZE / 2.0f, CellGrid::CELL_SIZE / 2.0f});
-            mine.setFillColor(MINE_COLOR);
-            target.draw(mine, cellStates);
+            target.draw(mineSprite, cellStates);
         });
-
-    target.draw(overlay, states);
 }
 
 std::optional<State::Transition> LostState::getTransition()

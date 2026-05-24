@@ -3,7 +3,9 @@
 #include <SFML/Graphics/RectangleShape.hpp>
 
 CellGrid::CellGrid(int cols, int rows, State::Context const &ctx)
-    : cols(cols), rows(rows), cells(cols * rows),
+    : cols(cols),
+      rows(rows),
+      cells(cols * rows),
       cellShape{{CELL_SIZE - CELL_PADDING, CELL_SIZE - CELL_PADDING}},
       cellText{ctx.getAssets().getMainFont(), "", CELL_DIGIT_SIZE},
       flagSprite{ctx.getAssets().getTexture("flag")}

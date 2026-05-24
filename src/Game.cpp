@@ -2,7 +2,8 @@
 
 #include "MenuState.hpp"
 
-Game::Game() : stateContext{assets, window}
+Game::Game()
+    : stateContext{assets, window}
 {
     assets.load();
     states.push_back(std::make_unique<MenuState>(stateContext));

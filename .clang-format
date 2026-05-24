@@ -10,5 +10,6 @@ IncludeCategories:
   - Regex:         '^".*"'
     Priority:      2
 InsertBraces: true
+PackConstructorInitializers: Never
 QualifierAlignment: Right
 SortIncludes: CaseInsensitive

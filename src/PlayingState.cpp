@@ -1,5 +1,6 @@
 #include "PlayingState.hpp"
 
+#include <SFML/Graphics/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Mouse.hpp>
 #include <stack>
@@ -9,22 +10,54 @@
 #include "RandomMineGenerator.hpp"
 #include "WonState.hpp"
 
-PlayingState::PlayingState(State::Context const &ctx, PlaySettings settings)
-    : State(ctx), cols{settings.getCols()}, rows{settings.getRows()},
-      grid{cols, rows, ctx},
-      totalCellCount{static_cast<unsigned int>(cols * rows)},
-      mineCellCount{static_cast<unsigned int>(
-          static_cast<float>(totalCellCount) * settings.getMineDensity())},
-      safeCellCount{totalCellCount - mineCellCount}, revealedCellCount(0),
-      header{ctx}
-{
-    float windowWidth = static_cast<float>(cols) * CellGrid::CELL_SIZE;
-    float windowHeight = static_cast<float>(rows) * CellGrid::CELL_SIZE;
-    sf::Vector2f windowSize = {windowWidth, windowHeight};
-    sf::View view{sf::FloatRect{{0.0f, 0.0f}, {windowWidth, windowHeight}}};
+PlayingState::PlayingState(State::Context const &ctx,
+                           DifficultySettings settings)
+    : State(ctx),
+      cols(settings.getCols()),
+      rows(settings.getRows()),
 
-    ctx.getWindow().get().setSize(sf::Vector2u{windowSize});
-    ctx.getWindow().get().setView(view);
+      gridSize(static_cast<float>(cols) * CellGrid::CELL_SIZE,
+               static_cast<float>(rows) * CellGrid::CELL_SIZE),
+
+      winSizeFloat(PADDING.x + gridSize.x + PADDING.x,
+                   PADDING.y + HEADER_H + PADDING.y + gridSize.y + PADDING.y),
+      winSize(sf::Vector2u(winSizeFloat)),
+
+      header(ctx),
+      grid(cols, rows, ctx),
+
+      cellCount(cols * rows),
+      mineCount(static_cast<unsigned int>(static_cast<float>(cellCount) *
+                                          settings.getMineDensity())),
+      revealedCount(0),
+      flagCount(0),
+      playingStatus(Status::Ongoing)
+{
+    ctx.getWindow().get().setSize(winSize);
+    ctx.getWindow().get().setView(
+        sf::View(sf::FloatRect(sf::Vector2f(), winSizeFloat)));
+
+    auto headerPos = sf::Vector2f(PADDING.x, PADDING.y);
+    auto headerSize = sf::Vector2f(winSizeFloat.x - 2 * PADDING.x, HEADER_H);
+
+    auto gridPos =
+        sf::Vector2f(PADDING.x, headerPos.y + headerSize.y + PADDING.y);
+
+    header.setHeaderSize(headerSize);
+    headerView.setSize(headerSize);
+    headerView.setCenter(headerSize / 2.0f);
+    headerView.setViewport(
+        sf::FloatRect(sf::Vector2f(headerPos.x / winSizeFloat.x,
+                                   headerPos.y / winSizeFloat.y),
+                      sf::Vector2f(headerSize.x / winSizeFloat.x,
+                                   headerSize.y / winSizeFloat.y)));
+
+    gridView.setSize(gridSize);
+    gridView.setCenter(gridSize / 2.0f);
+    gridView.setViewport(sf::FloatRect(
+        sf::Vector2f(gridPos.x / winSizeFloat.x, gridPos.y / winSizeFloat.y),
+        sf::Vector2f(gridSize.x / winSizeFloat.x,
+                     gridSize.y / winSizeFloat.y)));
 }
 
 void PlayingState::handleEvent(std::optional<sf::Event> const &event)
@@ -37,36 +70,63 @@ void PlayingState::handleEvent(std::optional<sf::Event> const &event)
     if (event->is<sf::Event::MouseButtonPressed>())
     {
         auto const *mouse = event->getIf<sf::Event::MouseButtonPressed>();
-        sf::Vector2f gridPos =
-            ctx.getWindow().get().mapPixelToCoords(mouse->position);
 
-        auto col = static_cast<int>(gridPos.x / CellGrid::CELL_SIZE);
-        auto row = static_cast<int>(gridPos.y / CellGrid::CELL_SIZE);
+        sf::Vector2f headerPos =
+            ctx.getWindow().get().mapPixelToCoords(mouse->position, headerView);
 
-        Cell *cell = grid.getCell(col, row);
-        if (!cell)
+        if (mouse->button == sf::Mouse::Button::Left &&
+            header.getSmiley().getGlobalBounds().contains(headerPos))
         {
+            std::cout << "RESET GAME\n";
             return;
         }
 
-        if (mouse->button == sf::Mouse::Button::Left)
+        sf::Vector2f gridPos =
+            ctx.getWindow().get().mapPixelToCoords(mouse->position, gridView);
+
+        sf::FloatRect gridBounds{sf::Vector2f(), gridSize};
+
+        if (gridBounds.contains(gridPos))
         {
-            onCellLeftClick(col, row);
-        }
-        else if (mouse->button == sf::Mouse::Button::Right)
-        {
-            onCellRightClick(col, row);
+            auto col = static_cast<int>(gridPos.x / CellGrid::CELL_SIZE);
+            auto row = static_cast<int>(gridPos.y / CellGrid::CELL_SIZE);
+
+            std::cout << gridPos.x << ' ' << gridPos.y << '\n';
+
+            Cell *cell = grid.getCell(col, row);
+            if (!cell)
+            {
+                return;
+            }
+
+            if (mouse->button == sf::Mouse::Button::Left)
+            {
+                gridLeftClick(col, row);
+            }
+            else if (mouse->button == sf::Mouse::Button::Right)
+            {
+                gridRightClick(col, row);
+            }
         }
     }
 }
 
+// TODO: pause on Esc and exit/main menu with two separate buttons
+
 void PlayingState::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
+    target.setView(headerView);
     target.draw(header, states);
 
-    auto gridStates = states;
-    gridStates.transform.translate({0, PlayingHeader::HEIGHT});
-    target.draw(grid, gridStates);
+    target.setView(gridView);
+    target.draw(grid, states);
+}
+
+void PlayingState::update([[maybe_unused]] double dt)
+{
+    header.setRemainingMines(static_cast<int>(mineCount) -
+                             static_cast<int>(flagCount));
+    header.update();
 }
 
 std::optional<State::Transition> PlayingState::getTransition()
@@ -78,22 +138,30 @@ std::optional<State::Transition> PlayingState::getTransition()
         return transition;
     }
 
-    // TODO: make sure that a transition occurs right after getTransition
-    // returns != nulloptr
     if (playingStatus == Status::Lost)
     {
+        WindowLayout layout = {.header = header,
+                               .headerView = headerView,
+                               .grid = grid,
+                               .gridView = gridView};
+
         State::Transition transition;
         transition.action = State::Action::Change;
         transition.state =
-            std::make_unique<LostState>(ctx, std::move(grid), detonatedPos);
+            std::make_unique<LostState>(ctx, layout, detonatedPos);
         return transition;
     }
 
     if (playingStatus == Status::Won)
     {
+        WindowLayout layout = {.header = header,
+                               .headerView = headerView,
+                               .grid = grid,
+                               .gridView = gridView};
+
         State::Transition transition;
         transition.action = State::Action::Change;
-        transition.state = std::make_unique<WonState>(ctx, std::move(grid));
+        transition.state = std::make_unique<WonState>(ctx, layout);
         return transition;
     }
 
@@ -105,13 +173,13 @@ void PlayingState::print(std::ostream &os) const
     os << "PlayingState[grid=" << grid << "]";
 }
 
-void PlayingState::onCellLeftClick(int col, int row)
+void PlayingState::gridLeftClick(int col, int row)
 {
     Cell *cell = grid.getCell(col, row);
 
-    if (revealedCellCount == 0)
+    if (revealedCount == 0)
     {
-        onFirstReveal(col, row);
+        firstReveal(col, row);
     }
     else if (cell->isRevealed())
     {
@@ -131,13 +199,13 @@ void PlayingState::onCellLeftClick(int col, int row)
         }
     }
 
-    if (revealedCellCount == safeCellCount)
+    if (revealedCount == cellCount - mineCount)
     {
         playingStatus = Status::Won;
     }
 }
 
-void PlayingState::onCellRightClick(int col, int row)
+void PlayingState::gridRightClick(int col, int row)
 {
     Cell *cell = grid.getCell(col, row);
 
@@ -146,14 +214,25 @@ void PlayingState::onCellRightClick(int col, int row)
         return;
     }
 
-    cell->setFlagged(!cell->isFlagged());
+    if (cell->isFlagged())
+    {
+        cell->setFlagged(false);
+        flagCount--;
+    }
+    else
+    {
+        cell->setFlagged(true);
+        flagCount++;
+    }
 }
 
-void PlayingState::onFirstReveal(int col, int row)
+void PlayingState::firstReveal(int col, int row)
 {
-    RandomMineGenerator generator{grid, mineCellCount};
+    RandomMineGenerator generator{grid, mineCount};
     generator.generateSafeStart(col, row);
     floodReveal(col, row);
+
+    header.startClock();
 }
 
 void PlayingState::chordingReveal(int col, int row)
@@ -201,7 +280,7 @@ void PlayingState::chordingReveal(int col, int row)
         else
         {
             neighbor->setRevealed();
-            revealedCellCount++;
+            revealedCount++;
         }
     });
     // clang-format on
@@ -225,7 +304,7 @@ void PlayingState::floodReveal(int col, int row)
         }
 
         cell->setRevealed();
-        revealedCellCount++;
+        revealedCount++;
 
         if (cell->getAdjacentMines() > 0)
         {

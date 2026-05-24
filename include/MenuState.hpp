@@ -7,7 +7,7 @@
 #include <TGUI/Widgets/ComboBox.hpp>
 #include <TGUI/Widgets/EditBox.hpp>
 
-#include "PlaySettings.hpp"
+#include "DifficultySettings.hpp"
 #include "State.hpp"
 
 class MenuState : public State
@@ -20,7 +20,7 @@ class MenuState : public State
     void print(std::ostream &os) const override;
 
   private:
-    PlaySettings getPlaySettings() const;
+    DifficultySettings getPlaySettings() const;
 
     bool requestedPlay = false;
 

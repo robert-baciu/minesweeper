@@ -1,18 +1,18 @@
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include "CellGrid.hpp"
 #include "State.hpp"
+#include "WindowLayout.hpp"
 
 class LostState : public State
 {
   public:
-    LostState(State::Context const &ctx, CellGrid grid,
+    LostState(State::Context const &ctx, WindowLayout layout,
               sf::Vector2i detonatedPos);
 
     void handleEvent(std::optional<sf::Event> const &event) override;
 
-    void update(double dt) override;
+    // void update(double dt) override;
 
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
@@ -26,11 +26,12 @@ class LostState : public State
     static constexpr sf::Color MINE_DETONATED_COLOR = {190, 0, 0};
     static constexpr sf::Color FLAG_MISPLACE_COLOR = {190, 0, 0};
 
-    CellGrid grid;
+    WindowLayout layout;
+
     sf::Vector2i detonatedPos;
 
-    sf::RectangleShape overlay;
     sf::Sprite flagSprite;
+    sf::Sprite mineSprite;
 
     bool transitionToMenu = false;
 

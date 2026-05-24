@@ -8,7 +8,7 @@ int main()
         while (game.isRunning())
         {
             game.run();
-            std::cout << game << std::endl;
+            // std::cout << game << std::endl;
         }
     }
     catch (std::exception const &e)

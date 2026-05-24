@@ -18,7 +18,8 @@ class State : public sf::Drawable
     {
       public:
         explicit Context(AssetManager const &assets, GameWindow &window)
-            : assets(assets), window(window)
+            : assets(assets),
+              window(window)
         {
         }
 

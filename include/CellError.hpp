@@ -8,7 +8,8 @@ class CellError : public std::runtime_error
     ~CellError() override = default;
 
   protected:
-    explicit CellError(std::string const &msg) : std::runtime_error(msg)
+    explicit CellError(std::string const &msg)
+        : std::runtime_error(msg)
     {
     }
 };

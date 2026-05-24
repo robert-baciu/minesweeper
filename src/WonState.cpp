@@ -4,10 +4,16 @@
 #include <SFML/System/Vector2.hpp>
 
 #include "MenuState.hpp"
+#include "SFML/Graphics/Color.hpp"
 
-WonState::WonState(State::Context const &ctx, CellGrid grid)
-    : State(ctx), grid(std::move(grid))
+WonState::WonState(State::Context const &ctx, WindowLayout layout)
+    : State{ctx},
+      layout(std::move(layout)),
+      flagSprite(ctx.getAssets().getTexture("flag")),
+      mineSprite(ctx.getAssets().getTexture("mine"))
 {
+    this->layout.header.setSmiley(ctx.getAssets().getTexture("smiley-won"));
+    this->layout.header.setRemainingMines(0);
 }
 
 void WonState::handleEvent(std::optional<sf::Event> const &event)
@@ -22,35 +28,46 @@ void WonState::handleEvent(std::optional<sf::Event> const &event)
     }
 }
 
-void WonState::update(double dt)
-{
-    revealTime += dt;
-}
-
 void WonState::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
-    target.draw(grid, states);
+    target.setView(layout.headerView);
+    target.draw(layout.header, states);
 
-    grid.all(
+    target.setView(layout.gridView);
+    target.draw(layout.grid, states);
+
+    sf::RectangleShape highlight{
+        {CellGrid::CELL_SIZE - CellGrid::CELL_PADDING,
+         CellGrid::CELL_SIZE - CellGrid::CELL_PADDING}};
+
+    layout.grid.all(
         [&](int col, int row)
         {
-            Cell const *cell = grid.getCell(col, row);
+            Cell const *cell = layout.grid.getCell(col, row);
 
-            if (cell->isMine() && (col + row >= 0.1 * revealTime))
+            if (cell->isMine())
             {
                 auto cellPos =
                     sf::Vector2f{sf::Vector2i{col, row}} * CellGrid::CELL_SIZE;
                 sf::RenderStates cellStates = states;
                 cellStates.transform.translate(cellPos);
 
-                float const mineRadius =
-                    (CellGrid::CELL_SIZE - CellGrid::CELL_PADDING) / 3.0f;
-                sf::CircleShape mine{mineRadius};
-                mine.setOrigin({mineRadius, mineRadius});
-                mine.setPosition(
-                    {CellGrid::CELL_SIZE / 2.0f, CellGrid::CELL_SIZE / 2.0f});
-                mine.setFillColor(MINE_COLOR);
-                target.draw(mine, cellStates);
+                if (cell->isFlagged())
+                {
+
+                    highlight.setFillColor(sf::Color(0, 190, 0));
+                    target.draw(highlight, cellStates);
+                    target.draw(mineSprite, cellStates);
+                }
+                else
+                {
+                    auto cellPos = sf::Vector2f{sf::Vector2i{col, row}} *
+                                   CellGrid::CELL_SIZE;
+                    sf::RenderStates cellStates = states;
+                    cellStates.transform.translate(cellPos);
+
+                    target.draw(mineSprite, cellStates);
+                }
             }
         });
 }

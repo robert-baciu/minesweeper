@@ -6,7 +6,8 @@ class MineGenerator
 {
   public:
     MineGenerator(CellGrid &grid, unsigned int mineCount)
-        : grid(grid), mineCount(mineCount)
+        : grid(grid),
+          mineCount(mineCount)
     {
     }
 

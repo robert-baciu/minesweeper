@@ -78,13 +78,13 @@ target_sources(${MAIN_EXECUTABLE_NAME}
     src/AssetManager.cpp
     src/Cell.cpp
     src/CellGrid.cpp
+    src/DifficultySettings.cpp
     src/Game.cpp
     src/GameWindow.cpp
     src/LostState.cpp
     src/MenuState.cpp
     src/PlayingHeader.cpp
     src/PlayingState.cpp
-    src/PlaySettings.cpp
     src/RandomMineGenerator.cpp
     src/State.cpp
     src/WonState.cpp
