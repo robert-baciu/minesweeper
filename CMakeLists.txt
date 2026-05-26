@@ -7,7 +7,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(MAIN_PROJECT_NAME "oop")
 set(MAIN_EXECUTABLE_NAME "${MAIN_PROJECT_NAME}")
 
-
 project(${MAIN_PROJECT_NAME})
 # set(CMAKE_PROJECT_VERSION_MAJOR 0)
 # set(CMAKE_PROJECT_VERSION_MINOR 0)
@@ -23,7 +22,6 @@ include(cmake/CopyHelper.cmake)
 
 ###############################################################################
 
-# external dependencies with FetchContent
 include(FetchContent)
 
 set(FETCHCONTENT_QUIET OFF CACHE INTERNAL "Override verbose output" FORCE)
@@ -43,12 +41,10 @@ FetchContent_Declare(
     GIT_SHALLOW    1  # works only with branches or tags, not with arbitrary commit hashes
     GIT_PROGRESS   ON
 )
-
 FetchContent_MakeAvailable(SFML)
 
 set(BUILD_SHARED_LIBS OFF)
 set(TGUI_BACKEND SFML_GRAPHICS)
-
 FetchContent_Declare(
   TGUI
   GIT_REPOSITORY https://github.com/texus/TGUI
@@ -57,9 +53,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(TGUI)
 
-###############################################################################
+FetchContent_Declare(
+    csv
+    GIT_REPOSITORY https://github.com/vincentlaucsb/csv-parser.git
+    GIT_TAG        5.2.0
+    GIT_SHALLOW    1
+)
+FetchContent_MakeAvailable(csv)
 
-# external dependencies with find_package
+###############################################################################
 
 find_package(Threads REQUIRED)
 if(APPLE)
@@ -77,25 +79,29 @@ target_sources(${MAIN_EXECUTABLE_NAME}
     PRIVATE
     src/AssetManager.cpp
     src/Cell.cpp
-    src/CellGrid.cpp
-    src/DifficultySettings.cpp
+    src/Difficulty.cpp
+    src/DifficultyParams.cpp
     src/Game.cpp
-    src/GameWindow.cpp
+    src/GameState.cpp
+    src/GameStateCtx.cpp
+    src/LeaderboardEntry.cpp
+    src/LeaderboardManager.cpp
+    src/LeaderboardState.cpp
     src/LostState.cpp
     src/MenuState.cpp
+    src/PlayingGrid.cpp
     src/PlayingHeader.cpp
     src/PlayingState.cpp
     src/RandomMineGenerator.cpp
     src/State.cpp
+    src/StateCtx.cpp
+    src/Window.cpp
     src/WonState.cpp
 )
 
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )
 # NOTE: RUN_SANITIZERS is optional, if it's not present it will default to true
 set_compiler_flags(RUN_SANITIZERS ${USE_ASAN} TARGET_NAMES ${MAIN_EXECUTABLE_NAME})
-# set_compiler_flags(TARGET_NAMES ${MAIN_EXECUTABLE_NAME} ${FOO} ${BAR})
-# where ${FOO} and ${BAR} represent additional executables or libraries
-# you want to compile with the set compiler flags
 
 ###############################################################################
 
@@ -103,11 +109,8 @@ set_compiler_flags(RUN_SANITIZERS ${USE_ASAN} TARGET_NAMES ${MAIN_EXECUTABLE_NAM
 target_include_directories(${MAIN_EXECUTABLE_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 )
-target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE
-    ext
-)
 target_link_libraries(${MAIN_EXECUTABLE_NAME} PRIVATE
-    SFML::Graphics SFML::Window SFML::System TGUI::TGUI Threads::Threads
+    SFML::Graphics SFML::Window SFML::System TGUI::TGUI csv Threads::Threads
 )
 
 if(APPLE)
@@ -117,13 +120,9 @@ endif()
 
 ###############################################################################
 
-# copy binaries to "bin" folder; these are uploaded as artifacts on each release
-# DESTINATION_DIR is set as "bin" in cmake/Options.cmake:6
 install(TARGETS ${MAIN_EXECUTABLE_NAME} DESTINATION ${DESTINATION_DIR})
 if(APPLE)
     install(FILES launcher.command DESTINATION ${DESTINATION_DIR})
 endif()
 
 copy_files(FILES tastatura.txt DIRECTORY assets COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})
-# copy_files(FILES tastatura.txt config.json DIRECTORY images sounds COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})
-# copy_files(DIRECTORY images sounds COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})

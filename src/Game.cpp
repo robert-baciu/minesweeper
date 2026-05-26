@@ -1,12 +1,16 @@
 #include "Game.hpp"
 
+#include <memory>
+
 #include "MenuState.hpp"
 
 Game::Game()
-    : stateContext{assets, window}
 {
     assets.load();
-    states.push_back(std::make_unique<MenuState>(stateContext));
+
+    states.push_back(std::make_unique<MenuState>(
+        std::make_shared<StateCtx>(assets, window)));
+
     prevTime = std::chrono::high_resolution_clock::now();
 }
 
@@ -54,7 +58,7 @@ void Game::run()
     {
         window.get().draw(*state);
     }
-    currentState->getGui().draw();
+    window.getGui().draw();
     window.get().display();
 }
 
@@ -64,7 +68,7 @@ void Game::handleEvents()
 
     while (std::optional const event = window.get().pollEvent())
     {
-        currentState->getGui().handleEvent(*event);
+        window.getGui().handleEvent(*event);
 
         bool quit = false;
 
@@ -113,8 +117,6 @@ std::ostream &operator<<(std::ostream &os, Game const &game)
         firstState = false;
     }
 
-    os << "}";
-
-    os << ", stateContext=" << game.stateContext << "]";
+    os << "}]";
     return os;
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-class DifficultySettings
+class DifficultyParams
 {
   public:
     class Builder;
@@ -10,14 +10,14 @@ class DifficultySettings
     [[nodiscard]] float getMineDensity() const;
 
   private:
-    DifficultySettings(int cols, int rows, float mineDensity);
+    DifficultyParams(int cols, int rows, float mineDensity);
 
     int cols;
     int rows;
     float mineDensity;
 };
 
-class DifficultySettings::Builder
+class DifficultyParams::Builder
 {
   public:
     Builder() = default;
@@ -26,7 +26,7 @@ class DifficultySettings::Builder
     Builder &withRows(int rows);
     Builder &withMineDensity(float mineDensity);
 
-    [[nodiscard]] DifficultySettings build() const;
+    [[nodiscard]] DifficultyParams build() const;
 
     int cols;
     int rows;

@@ -6,21 +6,21 @@
 #include <TGUI/Widgets/ComboBox.hpp>
 #include <TGUI/Widgets/Group.hpp>
 #include <TGUI/Widgets/Label.hpp>
+#include <utility>
 
-#include "InvalidDifficultyError.hpp"
+#include "LeaderboardState.hpp"
 #include "PlayingState.hpp"
 #include "State.hpp"
 
-MenuState::MenuState(State::Context const &ctx)
-    : State(ctx)
+MenuState::MenuState(StateCtxPtr ctx_)
+    : State(std::move(ctx_))
 {
-    auto theme = tgui::Theme::create("assets/themes/Dark.txt");
-    tgui::Theme::setDefault(theme);
-
-    ctx.getWindow().get().setSize(ctx.getWindow().getDefaultSize());
+    ctx->getWindow().get().setSize(ctx->getWindow().getDefaultSize());
 
     auto const elemWidth = "80%";
     auto const elemHeight = 50.0f;
+
+    auto &gui = ctx->getWindow().getGui();
 
     auto title = tgui::Label::create("MINESWEEPER");
     title->setTextSize(64);
@@ -30,12 +30,11 @@ MenuState::MenuState(State::Context const &ctx)
     diffBox = tgui::ComboBox::create();
     diffBox->setSize(elemWidth, elemHeight);
     diffBox->setPosition("50% - (width / 2)", "title.bottom + 40");
-    diffBox->addItem("Easy");
-    diffBox->addItem("Medium");
-    diffBox->addItem("Hard");
-    diffBox->addItem("Extreme");
-    diffBox->addItem("Custom");
-    diffBox->setSelectedItemByIndex(0);
+    for (std::string const &difficultyStr : DifficultyUtil::allStrings())
+    {
+        diffBox->addItem(difficultyStr);
+    }
+    diffBox->setSelectedItemByIndex(1);
     gui.add(diffBox, "difficulty");
 
     auto customGroup = tgui::Group::create();
@@ -44,13 +43,13 @@ MenuState::MenuState(State::Context const &ctx)
     customGroup->setPosition("50% - (width / 2)", "difficulty.bottom + 10");
 
     colsEdit = tgui::EditBox::create();
-    colsEdit->setDefaultText("Columns");
+    colsEdit->setDefaultText("Columns [>= 8]");
     colsEdit->setInputValidator(tgui::EditBox::Validator::UInt);
     colsEdit->setSize("100%", elemHeight);
     colsEdit->setPosition(0, 0);
 
     rowsEdit = tgui::EditBox::create();
-    rowsEdit->setDefaultText("Rows");
+    rowsEdit->setDefaultText("Rows [>= 8]");
     rowsEdit->setInputValidator(tgui::EditBox::Validator::UInt);
     rowsEdit->setSize("100%", elemHeight);
     rowsEdit->setPosition(0, elemHeight + customGroupSpacing);
@@ -67,16 +66,24 @@ MenuState::MenuState(State::Context const &ctx)
 
     auto playButton = tgui::Button::create("PLAY");
     playButton->setSize(elemWidth, elemHeight);
-    playButton->setPosition("50% - (width / 2)", "difficulty.bottom + 20");
+    playButton->setPosition("50% - (width / 2)", "difficulty.bottom + 10");
     gui.add(playButton, "playButton");
+
+    auto leaderboardButton = tgui::Button::create("LEADERBOARD");
+    leaderboardButton->setSize(elemWidth, elemHeight);
+    leaderboardButton->setPosition("50% - (width / 2)",
+                                   "playButton.bottom + 10");
+    gui.add(leaderboardButton, "leaderboardButton");
 
     auto exitButton = tgui::Button::create("EXIT");
     exitButton->setSize(elemWidth, elemHeight);
-    exitButton->setPosition("50% - (width / 2)", "playButton.bottom + 10");
+    exitButton->setPosition("50% - (width / 2)",
+                            "leaderboardButton.bottom + 10");
     gui.add(exitButton, "exitButton");
 
     diffBox->onItemSelect(
-        [this, customGroup, playButton](tgui::String const &item)
+        // TODO:
+        [&gui, customGroup, playButton](tgui::String const &item)
         {
             if (item == "Custom")
             {
@@ -98,41 +105,42 @@ MenuState::MenuState(State::Context const &ctx)
             }
         });
 
-    playButton->onPress([this]() { requestedPlay = true; });
+    playButton->onPress([this]() { transitionToPlay = true; });
+
+    leaderboardButton->onPress([this]() { transitionToLeaderboard = true; });
 
     exitButton->onPress([this]() { requestedExit = true; });
 }
 
-DifficultySettings MenuState::getPlaySettings() const
+DifficultyParams MenuState::getPlaySettings(Difficulty difficulty) const
 {
     int cols, rows;
     float mineDensity;
 
-    std::string const diff = diffBox->getSelectedItem().toStdString();
-    if (diff == "Easy")
+    // TODO: Move to a map
+    if (difficulty == Difficulty::Easy)
     {
         cols = rows = 8;
         mineDensity = 0.1f;
     }
-    else if (diff == "Medium")
+    else if (difficulty == Difficulty::Medium)
     {
         cols = rows = 12;
         mineDensity = 0.1f;
     }
-    else if (diff == "Hard")
+    else if (difficulty == Difficulty::Hard)
     {
         cols = rows = 16;
         mineDensity = 0.125f;
     }
-    else if (diff == "Extreme")
+    else if (difficulty == Difficulty::Extreme)
     {
         cols = rows = 16;
         mineDensity = 0.15f;
     }
-    else if (diff == "Custom")
+    else if (difficulty == Difficulty::Custom)
     {
-        // TODO: Validation + min values for cols, rows so header doesn't
-        // underflow
+        // TODO: Validation
         cols = std::stoi(colsEdit->getText().toStdString());
         rows = std::stoi(rowsEdit->getText().toStdString());
         mineDensity = static_cast<float>(
@@ -141,10 +149,10 @@ DifficultySettings MenuState::getPlaySettings() const
     }
     else
     {
-        throw InvalidDifficultyError(diff);
+        std::unreachable();
     }
 
-    return DifficultySettings::Builder()
+    return DifficultyParams::Builder()
         .withCols(cols)
         .withRows(rows)
         .withMineDensity(mineDensity)
@@ -160,12 +168,25 @@ std::optional<State::Transition> MenuState::getTransition()
         return transition;
     }
 
-    if (requestedPlay)
+    if (transitionToLeaderboard)
     {
         State::Transition transition;
         transition.action = State::Action::Change;
-        transition.state =
-            std::make_unique<PlayingState>(ctx, getPlaySettings());
+        transition.state = std::make_unique<LeaderboardState>(std::move(ctx));
+        return transition;
+    }
+
+    if (transitionToPlay)
+    {
+        Difficulty selected = DifficultyUtil::fromString(
+            diffBox->getSelectedItem().toStdString());
+        DifficultyParams params = getPlaySettings(selected);
+
+        auto gameCtx = std::make_shared<GameStateCtx>(ctx, params);
+
+        State::Transition transition;
+        transition.action = State::Action::Change;
+        transition.state = std::make_unique<PlayingState>(std::move(gameCtx));
         return transition;
     }
 

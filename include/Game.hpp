@@ -6,8 +6,8 @@
 #include <SFML/Window/Keyboard.hpp>
 
 #include "AssetManager.hpp"
-#include "GameWindow.hpp"
 #include "State.hpp"
+#include "Window.hpp"
 
 class Game
 {
@@ -26,8 +26,7 @@ class Game
     bool requestedExit = false;
 
     AssetManager assets;
-    GameWindow window;
-    State::Context const stateContext;
+    Window window;
 
     std::vector<std::unique_ptr<State>> states;
 

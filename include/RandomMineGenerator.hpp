@@ -5,7 +5,7 @@
 class RandomMineGenerator : public MineGenerator
 {
   public:
-    RandomMineGenerator(CellGrid &grid, unsigned int mineCount);
+    RandomMineGenerator(PlayingGrid &grid, unsigned int mineCount);
 
     void generateSafeStart(int startCol, int startRow) override;
 

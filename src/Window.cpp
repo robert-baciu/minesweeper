@@ -1,10 +1,10 @@
-#include "GameWindow.hpp"
+#include "Window.hpp"
 
 #include <SFML/System/Vector2.hpp>
 
 #include "GameConfig.hpp"
 
-GameWindow::GameWindow()
+Window::Window()
 {
     auto desktop = sf::VideoMode::getDesktopMode();
     auto desktopHeight = static_cast<float>(desktop.size.y);
@@ -32,19 +32,33 @@ GameWindow::GameWindow()
     window.create(sf::VideoMode(defaultSize), GameConfig::TITLE,
                   sf::Style::Default);
     window.setVerticalSyncEnabled(true);
+
+    gui.setWindow(window);
+
+    auto font = tgui::Font("assets/fonts/VCR_OSD_MONO_1.001.ttf");
+    gui.setFont(font);
+    gui.setTextSize(32);
+
+    auto theme = tgui::Theme::create("assets/themes/Dark.txt");
+    tgui::Theme::setDefault(theme);
 }
 
-sf::RenderWindow &GameWindow::get()
+sf::RenderWindow &Window::get()
 {
     return window;
 }
 
-sf::Vector2u GameWindow::getDefaultSize()
+sf::Vector2u Window::getDefaultSize()
 {
     return defaultSize;
 }
 
-std::ostream &operator<<(std::ostream &os, GameWindow const &window)
+tgui::Gui &Window::getGui()
+{
+    return gui;
+}
+
+std::ostream &operator<<(std::ostream &os, Window const &window)
 {
     auto width = window.window.getSize().x;
     auto height = window.window.getSize().y;

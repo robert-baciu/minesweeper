@@ -6,41 +6,13 @@
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
+#include <TGUI/Backend/SFML-Graphics.hpp>
 
-#include "AssetManager.hpp"
-#include "GameWindow.hpp"
-#include "TGUI/Backend/SFML-Graphics.hpp"
+#include "StateCtx.hpp"
 
 class State : public sf::Drawable
 {
   public:
-    class Context
-    {
-      public:
-        explicit Context(AssetManager const &assets, GameWindow &window)
-            : assets(assets),
-              window(window)
-        {
-        }
-
-        [[nodiscard]] AssetManager const &getAssets() const
-        {
-            return assets;
-        }
-
-        [[nodiscard]] GameWindow &getWindow() const
-        {
-            return window;
-        }
-
-        friend std::ostream &operator<<(std::ostream &os,
-                                        State::Context const &ctx);
-
-      private:
-        AssetManager const &assets;
-        GameWindow &window;
-    };
-
     enum class Action
     {
         Change,
@@ -55,7 +27,7 @@ class State : public sf::Drawable
         std::unique_ptr<State> state;
     };
 
-    explicit State(State::Context const &ctx);
+    explicit State(StateCtxPtr ctx_);
 
     ~State() override = default;
 
@@ -69,16 +41,12 @@ class State : public sf::Drawable
 
     virtual void requestExit();
 
-    tgui::Gui &getGui();
-
     virtual void print(std::ostream &os) const = 0;
 
     friend std::ostream &operator<<(std::ostream &os, State const &state);
 
   protected:
-    State::Context const &ctx;
-
-    tgui::Gui gui;
+    StateCtxPtr ctx;
 
     bool requestedExit = false;
 };

@@ -1,43 +1,47 @@
-#include "CellGrid.hpp"
+#include "PlayingGrid.hpp"
 
 #include <SFML/Graphics/RectangleShape.hpp>
 
-CellGrid::CellGrid(int cols, int rows, State::Context const &ctx)
+PlayingGrid::PlayingGrid(StateCtxPtr const &ctx, int cols, int rows)
     : cols(cols),
       rows(rows),
       cells(cols * rows),
-      cellShape{{CELL_SIZE - CELL_PADDING, CELL_SIZE - CELL_PADDING}},
-      cellText{ctx.getAssets().getMainFont(), "", CELL_DIGIT_SIZE},
-      flagSprite{ctx.getAssets().getTexture("flag")}
+      cellShape(
+          sf::Vector2f(CELL_SIZE - CELL_PADDING, CELL_SIZE - CELL_PADDING)),
+      cellText(ctx->getAssets().getMainFont()),
+      flagSprite(ctx->getAssets().getTexture("flag")),
+      mineSprite(ctx->getAssets().getTexture("mine"))
 {
+    cellText.setCharacterSize(CELL_DIGIT_SIZE);
 }
 
-int CellGrid::getCols() const
+int PlayingGrid::getCols() const
 {
     return cols;
 }
 
-int CellGrid::getRows() const
+int PlayingGrid::getRows() const
 {
     return rows;
 }
 
-Cell *CellGrid::getCell(int col, int row)
+Cell *PlayingGrid::getCell(int col, int row)
 {
     return isInBounds(col, row) ? &cells[col + row * cols] : nullptr;
 }
 
-Cell const *CellGrid::getCell(int col, int row) const
+Cell const *PlayingGrid::getCell(int col, int row) const
 {
     return isInBounds(col, row) ? &cells[col + row * cols] : nullptr;
 }
 
-std::vector<Cell> const &CellGrid::getCells() const
+std::vector<Cell> const &PlayingGrid::getCells() const
 {
     return cells;
 }
 
-void CellGrid::all(std::function<void(int col, int row)> const &callback) const
+void PlayingGrid::all(
+    std::function<void(int col, int row)> const &callback) const
 {
     for (int row = 0; row < rows; row++)
     {
@@ -48,7 +52,7 @@ void CellGrid::all(std::function<void(int col, int row)> const &callback) const
     }
 }
 
-void CellGrid::neighbors(
+void PlayingGrid::neighbors(
     int col, int row,
     std::function<void(int neighborCol, int neighborRow)> const &callback) const
 {
@@ -73,7 +77,7 @@ void CellGrid::neighbors(
     }
 }
 
-void CellGrid::draw(sf::RenderTarget &target, sf::RenderStates states) const
+void PlayingGrid::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
     // clang-format off
     all([&](int col, int row) {
@@ -109,13 +113,23 @@ void CellGrid::draw(sf::RenderTarget &target, sf::RenderStates states) const
     // clang-format on
 }
 
-std::ostream &operator<<(std::ostream &os, CellGrid const &grid)
+sf::Sprite PlayingGrid::getFlagSprite() const
+{
+    return flagSprite;
+}
+
+sf::Sprite PlayingGrid::getMineSprite() const
+{
+    return mineSprite;
+}
+
+std::ostream &operator<<(std::ostream &os, PlayingGrid const &grid)
 {
     os << "Grid[cols=" << grid.cols << ", rows=" << grid.rows << "]";
     return os;
 }
 
-bool CellGrid::isInBounds(int col, int row) const
+bool PlayingGrid::isInBounds(int col, int row) const
 {
     return col >= 0 && col < cols && row >= 0 && row < rows;
 }

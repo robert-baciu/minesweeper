@@ -5,13 +5,12 @@
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Window/Keyboard.hpp>
 
-#include "State.hpp"
-#include "WindowLayout.hpp"
+#include "GameState.hpp"
 
-class WonState : public State
+class WonState : public GameState
 {
   public:
-    WonState(State::Context const &ctx, WindowLayout layout);
+    explicit WonState(GameStateCtxPtr gameCtx_);
 
     void handleEvent(std::optional<sf::Event> const &event) override;
 
@@ -25,9 +24,4 @@ class WonState : public State
     static constexpr sf::Color MINE_COLOR = {15, 15, 15};
 
     bool transitionToMenu = false;
-
-    WindowLayout layout;
-
-    sf::Sprite flagSprite;
-    sf::Sprite mineSprite;
 };

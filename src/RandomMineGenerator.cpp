@@ -3,7 +3,8 @@
 #include <iostream>
 #include <random>
 
-RandomMineGenerator::RandomMineGenerator(CellGrid &grid, unsigned int mineCount)
+RandomMineGenerator::RandomMineGenerator(PlayingGrid &grid,
+                                         unsigned int mineCount)
     : MineGenerator{grid, mineCount}
 {
 }

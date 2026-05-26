@@ -1,19 +1,22 @@
 #include "WonState.hpp"
 
 #include <optional>
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include "MenuState.hpp"
-#include "SFML/Graphics/Color.hpp"
 
-WonState::WonState(State::Context const &ctx, WindowLayout layout)
-    : State{ctx},
-      layout(std::move(layout)),
-      flagSprite(ctx.getAssets().getTexture("flag")),
-      mineSprite(ctx.getAssets().getTexture("mine"))
+WonState::WonState(GameStateCtxPtr gameCtx_)
+    : GameState(std::move(gameCtx_))
 {
-    this->layout.header.setSmiley(ctx.getAssets().getTexture("smiley-won"));
-    this->layout.header.setRemainingMines(0);
+    // TODO: setSmiley(WindowLayout::Smiley::Won)
+    gameCtx->getHeader().setSmiley(
+        gameCtx->getAssets().getTexture("smiley-won"));
+    gameCtx->getHeader().setRemainingMines(0);
+
+    // TODO:
+    // LeaderboardEntry entry();
+    // LeaderboardManager::save().
 }
 
 void WonState::handleEvent(std::optional<sf::Event> const &event)
@@ -30,44 +33,35 @@ void WonState::handleEvent(std::optional<sf::Event> const &event)
 
 void WonState::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
-    target.setView(layout.headerView);
-    target.draw(layout.header, states);
+    target.setView(gameCtx->getHeaderView());
+    target.draw(gameCtx->getHeader(), states);
 
-    target.setView(layout.gridView);
-    target.draw(layout.grid, states);
+    target.setView(gameCtx->getGridView());
+    target.draw(gameCtx->getGrid(), states);
 
     sf::RectangleShape highlight{
-        {CellGrid::CELL_SIZE - CellGrid::CELL_PADDING,
-         CellGrid::CELL_SIZE - CellGrid::CELL_PADDING}};
+        {PlayingGrid::CELL_SIZE - PlayingGrid::CELL_PADDING,
+         PlayingGrid::CELL_SIZE - PlayingGrid::CELL_PADDING}};
 
-    layout.grid.all(
+    gameCtx->getGrid().all(
         [&](int col, int row)
         {
-            Cell const *cell = layout.grid.getCell(col, row);
+            Cell const *cell = gameCtx->getGrid().getCell(col, row);
 
             if (cell->isMine())
             {
-                auto cellPos =
-                    sf::Vector2f{sf::Vector2i{col, row}} * CellGrid::CELL_SIZE;
+                auto cellPos = sf::Vector2f{sf::Vector2i{col, row}} *
+                               PlayingGrid::CELL_SIZE;
                 sf::RenderStates cellStates = states;
                 cellStates.transform.translate(cellPos);
 
                 if (cell->isFlagged())
                 {
-
                     highlight.setFillColor(sf::Color(0, 190, 0));
                     target.draw(highlight, cellStates);
-                    target.draw(mineSprite, cellStates);
                 }
-                else
-                {
-                    auto cellPos = sf::Vector2f{sf::Vector2i{col, row}} *
-                                   CellGrid::CELL_SIZE;
-                    sf::RenderStates cellStates = states;
-                    cellStates.transform.translate(cellPos);
 
-                    target.draw(mineSprite, cellStates);
-                }
+                target.draw(gameCtx->getGrid().getMineSprite(), cellStates);
             }
         });
 }

@@ -6,13 +6,13 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/System/Clock.hpp>
 
-#include "CellGrid.hpp"
-#include "State.hpp"
+#include "PlayingGrid.hpp"
+#include "StateCtx.hpp"
 
 class PlayingHeader : public sf::Drawable
 {
   public:
-    explicit PlayingHeader(State::Context const &ctx);
+    explicit PlayingHeader(StateCtxPtr const &ctx);
 
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
     void handleEvent(std::optional<sf::Event> const &event);
@@ -31,8 +31,8 @@ class PlayingHeader : public sf::Drawable
     static constexpr sf::Color HEADER_COLOR{23, 23, 23};
     static constexpr sf::Color TEXT_COLOR{240, 240, 240};
 
-    static constexpr sf::Vector2f SMILEY_SIZE{1.5f * CellGrid::CELL_SIZE,
-                                              1.5f * CellGrid::CELL_SIZE};
+    static constexpr sf::Vector2f SMILEY_SIZE{1.5f * PlayingGrid::CELL_SIZE,
+                                              1.5f * PlayingGrid::CELL_SIZE};
 
     sf::RectangleShape header;
 

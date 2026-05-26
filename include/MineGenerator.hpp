@@ -1,11 +1,11 @@
 #pragma once
 
-#include "CellGrid.hpp"
+#include "PlayingGrid.hpp"
 
 class MineGenerator
 {
   public:
-    MineGenerator(CellGrid &grid, unsigned int mineCount)
+    MineGenerator(PlayingGrid &grid, unsigned int mineCount)
         : grid(grid),
           mineCount(mineCount)
     {
@@ -16,7 +16,7 @@ class MineGenerator
     virtual void generateSafeStart(int startCol, int startRow) = 0;
 
   protected:
-    CellGrid &grid;
+    PlayingGrid &grid;
 
     unsigned int mineCount;
 };

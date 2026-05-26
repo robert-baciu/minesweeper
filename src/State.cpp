@@ -1,16 +1,13 @@
 #include "State.hpp"
 
 #include <optional>
+#include <TGUI/Font.hpp>
+#include <utility>
 
-#include "TGUI/Font.hpp"
-
-State::State(State::Context const &ctx)
-    : ctx{ctx},
-      gui{ctx.getWindow().get()}
+State::State(StateCtxPtr ctx_)
+    : ctx(std::move(ctx_))
 {
-    auto font = tgui::Font("assets/fonts/VCR_OSD_MONO_1.001.ttf");
-    gui.setFont(font);
-    gui.setTextSize(32);
+    ctx->getWindow().getGui().removeAllWidgets();
 }
 
 void State::update([[maybe_unused]] double dt)
@@ -43,20 +40,8 @@ std::optional<State::Transition> State::getTransition()
     return std::nullopt;
 }
 
-tgui::Gui &State::getGui()
-{
-    return gui;
-}
-
 std::ostream &operator<<(std::ostream &os, State const &state)
 {
     state.print(os);
-    return os;
-}
-
-std::ostream &operator<<(std::ostream &os, State::Context const &ctx)
-{
-    os << "State::Context[assets=" << ctx.getAssets()
-       << ", window=" << ctx.getWindow() << "]";
     return os;
 }

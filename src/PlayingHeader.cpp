@@ -3,20 +3,18 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/System/Vector2.hpp>
 
-#include "CellGrid.hpp"
-
-PlayingHeader::PlayingHeader(State::Context const &ctx)
-    : clockText(ctx.getAssets().getMainFont(), "0"),
+PlayingHeader::PlayingHeader(StateCtxPtr const &ctx)
+    : clockText(ctx->getAssets().getMainFont(), "0"),
       remainingMines(0),
-      remainingText(ctx.getAssets().getMainFont(), "0"),
-      smiley(ctx.getAssets().getTexture("smiley-playing"))
+      remainingText(ctx->getAssets().getMainFont(), "0"),
+      smiley(ctx->getAssets().getTexture("smiley-playing"))
 {
     header.setFillColor(HEADER_COLOR);
 
     clock.reset();
 
-    clockText.setCharacterSize(CellGrid::CELL_SIZE);
-    remainingText.setCharacterSize(CellGrid::CELL_SIZE);
+    clockText.setCharacterSize(PlayingGrid::CELL_SIZE);
+    remainingText.setCharacterSize(PlayingGrid::CELL_SIZE);
 
     smiley.setScale(
         sf::Vector2f(SMILEY_SIZE.x / smiley.getLocalBounds().size.x,
@@ -28,11 +26,12 @@ void PlayingHeader::setHeaderSize(sf::Vector2f size)
     header.setSize(size);
 
     clockText.setPosition(
-        sf::Vector2f(CellGrid::CELL_SIZE, header.getSize().y / 2.0f));
+        sf::Vector2f(PlayingGrid::CELL_SIZE, header.getSize().y / 2.0f));
     clockText.setFillColor(TEXT_COLOR);
 
-    remainingText.setPosition(sf::Vector2f(
-        header.getSize().x - CellGrid::CELL_SIZE, header.getSize().y / 2.0f));
+    remainingText.setPosition(
+        sf::Vector2f(header.getSize().x - PlayingGrid::CELL_SIZE,
+                     header.getSize().y / 2.0f));
     remainingText.setFillColor(TEXT_COLOR);
 
     smiley.setOrigin(smiley.getLocalBounds().getCenter());

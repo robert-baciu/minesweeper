@@ -5,17 +5,13 @@
 #include <SFML/Graphics/RenderStates.hpp>
 
 #include "MenuState.hpp"
-#include "WindowLayout.hpp"
 
-LostState::LostState(State::Context const &ctx, WindowLayout layout,
-                     sf::Vector2i detonatedPos)
-    : State{ctx},
-      layout(std::move(layout)),
-      detonatedPos{detonatedPos},
-      flagSprite{ctx.getAssets().getTexture("flag")},
-      mineSprite(ctx.getAssets().getTexture("mine"))
+LostState::LostState(GameStateCtxPtr gameCtx_, sf::Vector2i detonated_)
+    : GameState(std::move(gameCtx_)),
+      detonated(detonated_)
 {
-    this->layout.header.setSmiley(ctx.getAssets().getTexture("smiley-lost"));
+    gameCtx->getHeader().setSmiley(
+        gameCtx->getAssets().getTexture("smiley-lost"));
 }
 
 void LostState::handleEvent(std::optional<sf::Event> const &event)
@@ -32,24 +28,22 @@ void LostState::handleEvent(std::optional<sf::Event> const &event)
 
 void LostState::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
-    target.setView(layout.headerView);
-    target.draw(layout.header, states);
+    target.setView(gameCtx->getHeaderView());
+    target.draw(gameCtx->getHeader(), states);
 
-    std::cout << "Header drawn\n";
-
-    target.setView(layout.gridView);
-    target.draw(layout.grid, states);
+    target.setView(gameCtx->getGridView());
+    target.draw(gameCtx->getGrid(), states);
 
     sf::RectangleShape highlight{
-        {CellGrid::CELL_SIZE - CellGrid::CELL_PADDING,
-         CellGrid::CELL_SIZE - CellGrid::CELL_PADDING}};
+        {PlayingGrid::CELL_SIZE - PlayingGrid::CELL_PADDING,
+         PlayingGrid::CELL_SIZE - PlayingGrid::CELL_PADDING}};
 
-    layout.grid.all(
+    gameCtx->getGrid().all(
         [&](int col, int row)
         {
-            Cell const *cell = layout.grid.getCell(col, row);
+            Cell const *cell = gameCtx->getGrid().getCell(col, row);
             auto cellPos =
-                sf::Vector2f{sf::Vector2i{col, row}} * CellGrid::CELL_SIZE;
+                sf::Vector2f{sf::Vector2i{col, row}} * PlayingGrid::CELL_SIZE;
             sf::RenderStates cellStates = states;
             cellStates.transform.translate(cellPos);
 
@@ -59,7 +53,7 @@ void LostState::draw(sf::RenderTarget &target, sf::RenderStates states) const
                 {
                     highlight.setFillColor(FLAG_MISPLACE_COLOR);
                     target.draw(highlight, cellStates);
-                    target.draw(flagSprite, cellStates);
+                    target.draw(gameCtx->getGrid().getFlagSprite(), cellStates);
                 }
 
                 return;
@@ -71,13 +65,13 @@ void LostState::draw(sf::RenderTarget &target, sf::RenderStates states) const
                 target.draw(highlight, cellStates);
             }
 
-            if (sf::Vector2i{col, row} == detonatedPos)
+            if (sf::Vector2i{col, row} == detonated)
             {
                 highlight.setFillColor(MINE_DETONATED_COLOR);
                 target.draw(highlight, cellStates);
             }
 
-            target.draw(mineSprite, cellStates);
+            target.draw(gameCtx->getGrid().getMineSprite(), cellStates);
         });
 }
 
@@ -94,7 +88,7 @@ std::optional<State::Transition> LostState::getTransition()
     {
         State::Transition transition;
         transition.action = State::Action::Change;
-        transition.state = std::make_unique<MenuState>(ctx);
+        transition.state = std::make_unique<MenuState>(std::move(ctx));
         return transition;
     }
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <functional>
-#include <optional>
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Drawable.hpp>
@@ -11,12 +10,12 @@
 #include <vector>
 
 #include "Cell.hpp"
-#include "State.hpp"
+#include "StateCtx.hpp"
 
-class CellGrid : public sf::Drawable
+class PlayingGrid : public sf::Drawable
 {
   public:
-    CellGrid(int cols, int rows, State::Context const &ctx);
+    PlayingGrid(StateCtxPtr const &ctx, int cols, int rows);
 
     [[nodiscard]] int getCols() const;
     [[nodiscard]] int getRows() const;
@@ -33,7 +32,10 @@ class CellGrid : public sf::Drawable
 
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
-    friend std::ostream &operator<<(std::ostream &os, CellGrid const &grid);
+    sf::Sprite getFlagSprite() const;
+    sf::Sprite getMineSprite() const;
+
+    friend std::ostream &operator<<(std::ostream &os, PlayingGrid const &grid);
 
     static constexpr float CELL_SIZE = 64.0f;
     static constexpr float CELL_PADDING = 2.0f;
@@ -59,4 +61,5 @@ class CellGrid : public sf::Drawable
     mutable sf::Text cellText;
 
     sf::Sprite flagSprite;
+    sf::Sprite mineSprite;
 };

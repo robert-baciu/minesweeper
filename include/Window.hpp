@@ -4,21 +4,25 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/VideoMode.hpp>
+#include <TGUI/Backend/SFML-Graphics.hpp>
 
-class GameWindow
+class Window
 {
   public:
-    GameWindow();
+    Window();
 
     sf::RenderWindow &get();
 
     sf::Vector2u getDefaultSize();
 
-    friend std::ostream &operator<<(std::ostream &os,
-                                    GameWindow const &gameWindow);
+    tgui::Gui &getGui();
+
+    friend std::ostream &operator<<(std::ostream &os, Window const &gameWindow);
 
   private:
     sf::RenderWindow window;
 
     sf::Vector2u defaultSize;
+
+    tgui::Gui gui;
 };

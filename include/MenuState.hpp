@@ -7,22 +7,24 @@
 #include <TGUI/Widgets/ComboBox.hpp>
 #include <TGUI/Widgets/EditBox.hpp>
 
-#include "DifficultySettings.hpp"
+#include "Difficulty.hpp"
+#include "DifficultyParams.hpp"
 #include "State.hpp"
 
 class MenuState : public State
 {
   public:
-    explicit MenuState(State::Context const &ctx);
+    explicit MenuState(StateCtxPtr ctx_);
 
     [[nodiscard]] std::optional<Transition> getTransition() override;
 
     void print(std::ostream &os) const override;
 
   private:
-    DifficultySettings getPlaySettings() const;
+    [[nodiscard]] DifficultyParams getPlaySettings(Difficulty difficulty) const;
 
-    bool requestedPlay = false;
+    bool transitionToPlay = false;
+    bool transitionToLeaderboard = false;
 
     tgui::ComboBox::Ptr diffBox;
     tgui::EditBox::Ptr colsEdit;

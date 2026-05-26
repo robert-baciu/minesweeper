@@ -10,59 +10,41 @@
 #include "RandomMineGenerator.hpp"
 #include "WonState.hpp"
 
-PlayingState::PlayingState(State::Context const &ctx,
-                           DifficultySettings settings)
-    : State(ctx),
-      cols(settings.getCols()),
-      rows(settings.getRows()),
-
-      gridSize(static_cast<float>(cols) * CellGrid::CELL_SIZE,
-               static_cast<float>(rows) * CellGrid::CELL_SIZE),
-
-      winSizeFloat(PADDING.x + gridSize.x + PADDING.x,
-                   PADDING.y + HEADER_H + PADDING.y + gridSize.y + PADDING.y),
-      winSize(sf::Vector2u(winSizeFloat)),
-
-      header(ctx),
-      grid(cols, rows, ctx),
-
-      cellCount(cols * rows),
-      mineCount(static_cast<unsigned int>(static_cast<float>(cellCount) *
-                                          settings.getMineDensity())),
+PlayingState::PlayingState(GameStateCtxPtr gameCtx_)
+    : GameState(std::move(gameCtx_)),
       revealedCount(0),
       flagCount(0),
-      playingStatus(Status::Ongoing)
+      lost(false),
+      won(false),
+      detonatedPos(sf::Vector2f(0, 0))
 {
-    ctx.getWindow().get().setSize(winSize);
-    ctx.getWindow().get().setView(
-        sf::View(sf::FloatRect(sf::Vector2f(), winSizeFloat)));
+    gameCtx->getWindow().get().setSize(sf::Vector2u(gameCtx->getWindowSize()));
+    gameCtx->getWindow().get().setView(
+        sf::View(sf::FloatRect(sf::Vector2f(0, 0), gameCtx->getWindowSize())));
 
-    auto headerPos = sf::Vector2f(PADDING.x, PADDING.y);
-    auto headerSize = sf::Vector2f(winSizeFloat.x - 2 * PADDING.x, HEADER_H);
+    gameCtx->getHeader().setHeaderSize(gameCtx->getHeaderSize());
+    gameCtx->getHeaderView().setSize(gameCtx->getHeaderSize());
+    gameCtx->getHeaderView().setCenter(gameCtx->getHeaderSize() / 2.0f);
+    gameCtx->getHeaderView().setViewport(sf::FloatRect(
+        sf::Vector2f(gameCtx->getHeaderPos().x / gameCtx->getWindowSize().x,
+                     gameCtx->getHeaderPos().y / gameCtx->getWindowSize().y),
+        sf::Vector2f(gameCtx->getHeaderSize().x / gameCtx->getWindowSize().x,
+                     gameCtx->getHeaderSize().y / gameCtx->getWindowSize().y)));
 
-    auto gridPos =
-        sf::Vector2f(PADDING.x, headerPos.y + headerSize.y + PADDING.y);
+    // TODO: Replace {} for () where possible
 
-    header.setHeaderSize(headerSize);
-    headerView.setSize(headerSize);
-    headerView.setCenter(headerSize / 2.0f);
-    headerView.setViewport(
-        sf::FloatRect(sf::Vector2f(headerPos.x / winSizeFloat.x,
-                                   headerPos.y / winSizeFloat.y),
-                      sf::Vector2f(headerSize.x / winSizeFloat.x,
-                                   headerSize.y / winSizeFloat.y)));
-
-    gridView.setSize(gridSize);
-    gridView.setCenter(gridSize / 2.0f);
-    gridView.setViewport(sf::FloatRect(
-        sf::Vector2f(gridPos.x / winSizeFloat.x, gridPos.y / winSizeFloat.y),
-        sf::Vector2f(gridSize.x / winSizeFloat.x,
-                     gridSize.y / winSizeFloat.y)));
+    gameCtx->getGridView().setSize(gameCtx->getGridSize());
+    gameCtx->getGridView().setCenter(gameCtx->getGridSize() / 2.0f);
+    gameCtx->getGridView().setViewport(sf::FloatRect(
+        sf::Vector2f(gameCtx->getGridPos().x / gameCtx->getWindowSize().x,
+                     gameCtx->getGridPos().y / gameCtx->getWindowSize().y),
+        sf::Vector2f(gameCtx->getGridSize().x / gameCtx->getWindowSize().x,
+                     gameCtx->getGridSize().y / gameCtx->getWindowSize().y)));
 }
 
 void PlayingState::handleEvent(std::optional<sf::Event> const &event)
 {
-    if (playingStatus != Status::Ongoing)
+    if (lost || won)
     {
         return;
     }
@@ -71,29 +53,31 @@ void PlayingState::handleEvent(std::optional<sf::Event> const &event)
     {
         auto const *mouse = event->getIf<sf::Event::MouseButtonPressed>();
 
-        sf::Vector2f headerPos =
-            ctx.getWindow().get().mapPixelToCoords(mouse->position, headerView);
+        sf::Vector2f headerMousePos =
+            gameCtx->getWindow().get().mapPixelToCoords(
+                mouse->position, gameCtx->getHeaderView());
 
         if (mouse->button == sf::Mouse::Button::Left &&
-            header.getSmiley().getGlobalBounds().contains(headerPos))
+            gameCtx->getHeader().getSmiley().getGlobalBounds().contains(
+                headerMousePos))
         {
-            std::cout << "RESET GAME\n";
+            restart = true;
             return;
         }
 
-        sf::Vector2f gridPos =
-            ctx.getWindow().get().mapPixelToCoords(mouse->position, gridView);
+        sf::Vector2f gridMousePos = gameCtx->getWindow().get().mapPixelToCoords(
+            mouse->position, gameCtx->getGridView());
 
-        sf::FloatRect gridBounds{sf::Vector2f(), gridSize};
+        sf::FloatRect gridBounds(sf::Vector2f(0, 0), gameCtx->getGridSize());
 
-        if (gridBounds.contains(gridPos))
+        if (gridBounds.contains(gridMousePos))
         {
-            auto col = static_cast<int>(gridPos.x / CellGrid::CELL_SIZE);
-            auto row = static_cast<int>(gridPos.y / CellGrid::CELL_SIZE);
+            auto col =
+                static_cast<int>(gridMousePos.x / PlayingGrid::CELL_SIZE);
+            auto row =
+                static_cast<int>(gridMousePos.y / PlayingGrid::CELL_SIZE);
 
-            std::cout << gridPos.x << ' ' << gridPos.y << '\n';
-
-            Cell *cell = grid.getCell(col, row);
+            Cell *cell = gameCtx->getGrid().getCell(col, row);
             if (!cell)
             {
                 return;
@@ -115,18 +99,19 @@ void PlayingState::handleEvent(std::optional<sf::Event> const &event)
 
 void PlayingState::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
-    target.setView(headerView);
-    target.draw(header, states);
+    target.setView(gameCtx->getHeaderView());
+    target.draw(gameCtx->getHeader(), states);
 
-    target.setView(gridView);
-    target.draw(grid, states);
+    target.setView(gameCtx->getGridView());
+    target.draw(gameCtx->getGrid(), states);
 }
 
 void PlayingState::update([[maybe_unused]] double dt)
 {
-    header.setRemainingMines(static_cast<int>(mineCount) -
-                             static_cast<int>(flagCount));
-    header.update();
+    gameCtx->getHeader().setRemainingMines(
+        static_cast<int>(gameCtx->getMineCount()) -
+        static_cast<int>(flagCount));
+    gameCtx->getHeader().update();
 }
 
 std::optional<State::Transition> PlayingState::getTransition()
@@ -138,30 +123,32 @@ std::optional<State::Transition> PlayingState::getTransition()
         return transition;
     }
 
-    if (playingStatus == Status::Lost)
+    if (restart)
     {
-        WindowLayout layout = {.header = header,
-                               .headerView = headerView,
-                               .grid = grid,
-                               .gridView = gridView};
+        auto newGameCtx =
+            std::make_shared<GameStateCtx>(ctx, gameCtx->getParams());
 
         State::Transition transition;
         transition.action = State::Action::Change;
         transition.state =
-            std::make_unique<LostState>(ctx, layout, detonatedPos);
+            std::make_unique<PlayingState>(std::move(newGameCtx));
         return transition;
     }
 
-    if (playingStatus == Status::Won)
+    if (lost)
     {
-        WindowLayout layout = {.header = header,
-                               .headerView = headerView,
-                               .grid = grid,
-                               .gridView = gridView};
-
         State::Transition transition;
         transition.action = State::Action::Change;
-        transition.state = std::make_unique<WonState>(ctx, layout);
+        transition.state =
+            std::make_unique<LostState>(std::move(gameCtx), detonatedPos);
+        return transition;
+    }
+
+    if (won)
+    {
+        State::Transition transition;
+        transition.action = State::Action::Change;
+        transition.state = std::make_unique<WonState>(std::move(gameCtx));
         return transition;
     }
 
@@ -170,12 +157,12 @@ std::optional<State::Transition> PlayingState::getTransition()
 
 void PlayingState::print(std::ostream &os) const
 {
-    os << "PlayingState[grid=" << grid << "]";
+    os << "PlayingState";
 }
 
 void PlayingState::gridLeftClick(int col, int row)
 {
-    Cell *cell = grid.getCell(col, row);
+    Cell *cell = gameCtx->getGrid().getCell(col, row);
 
     if (revealedCount == 0)
     {
@@ -189,7 +176,7 @@ void PlayingState::gridLeftClick(int col, int row)
     {
         if (cell->isMine())
         {
-            playingStatus = Status::Lost;
+            lost = true;
             detonatedPos = {col, row};
             return;
         }
@@ -199,15 +186,15 @@ void PlayingState::gridLeftClick(int col, int row)
         }
     }
 
-    if (revealedCount == cellCount - mineCount)
+    if (revealedCount == gameCtx->getCellCount() - gameCtx->getMineCount())
     {
-        playingStatus = Status::Won;
+        won = true;
     }
 }
 
 void PlayingState::gridRightClick(int col, int row)
 {
-    Cell *cell = grid.getCell(col, row);
+    Cell *cell = gameCtx->getGrid().getCell(col, row);
 
     if (cell->isRevealed())
     {
@@ -228,24 +215,24 @@ void PlayingState::gridRightClick(int col, int row)
 
 void PlayingState::firstReveal(int col, int row)
 {
-    RandomMineGenerator generator{grid, mineCount};
+    RandomMineGenerator generator{gameCtx->getGrid(), gameCtx->getMineCount()};
     generator.generateSafeStart(col, row);
     floodReveal(col, row);
 
-    header.startClock();
+    gameCtx->getHeader().startClock();
 }
 
 void PlayingState::chordingReveal(int col, int row)
 {
-    Cell *cell = grid.getCell(col, row);
+    Cell *cell = gameCtx->getGrid().getCell(col, row);
 
     unsigned int adjacentMines = cell->getAdjacentMines();
     unsigned int flags = 0;
 
     // clang-format off
-    grid.neighbors(col, row, [this, &flags](int neighborCol, int neighborRow)
+    gameCtx->getGrid().neighbors(col, row, [this, &flags](int neighborCol, int neighborRow)
     {
-        Cell *neighbor = grid.getCell(neighborCol, neighborRow);
+        Cell *neighbor = gameCtx->getGrid().getCell(neighborCol, neighborRow);
         if (neighbor->isFlagged())
         {
             flags++;
@@ -259,8 +246,8 @@ void PlayingState::chordingReveal(int col, int row)
     }
 
     // clang-format off
-    grid.neighbors(col, row, [this](int neighborCol, int neighborRow) {
-        Cell *neighbor = grid.getCell(neighborCol, neighborRow);
+    gameCtx->getGrid().neighbors(col, row, [this](int neighborCol, int neighborRow) {
+        Cell *neighbor = gameCtx->getGrid().getCell(neighborCol, neighborRow);
         if (!neighbor || neighbor->isRevealed() || neighbor->isFlagged())
         {
             return;
@@ -268,7 +255,7 @@ void PlayingState::chordingReveal(int col, int row)
 
         if (neighbor->isMine())
         {
-            playingStatus = Status::Lost;
+            lost = true;
             detonatedPos = {neighborCol, neighborRow};
             return;
         }
@@ -296,7 +283,7 @@ void PlayingState::floodReveal(int col, int row)
         auto cellPos = stack.top();
         stack.pop();
 
-        Cell *cell = grid.getCell(cellPos.x, cellPos.y);
+        Cell *cell = gameCtx->getGrid().getCell(cellPos.x, cellPos.y);
 
         if (!cell || cell->isRevealed())
         {
