@@ -5,6 +5,7 @@
 #include <SFML/Graphics/RenderStates.hpp>
 
 #include "MenuState.hpp"
+#include "PlayingState.hpp"
 
 LostState::LostState(GameStateCtxPtr gameCtx_, sf::Vector2i detonated_)
     : GameState(std::move(gameCtx_)),
@@ -16,12 +17,20 @@ LostState::LostState(GameStateCtxPtr gameCtx_, sf::Vector2i detonated_)
 
 void LostState::handleEvent(std::optional<sf::Event> const &event)
 {
-    if (event->is<sf::Event::KeyPressed>())
+    if (event->is<sf::Event::MouseButtonPressed>())
     {
-        auto const *key = event->getIf<sf::Event::KeyPressed>();
-        if (key->scancode == sf::Keyboard::Scancode::Enter)
+        auto const *mouse = event->getIf<sf::Event::MouseButtonPressed>();
+
+        sf::Vector2f headerMousePos =
+            gameCtx->getWindow().get().mapPixelToCoords(
+                mouse->position, gameCtx->getHeaderView());
+
+        if (mouse->button == sf::Mouse::Button::Left &&
+            gameCtx->getHeader().getSmiley().getGlobalBounds().contains(
+                headerMousePos))
         {
-            transitionToMenu = true;
+            restart = true;
+            return;
         }
     }
 }
@@ -81,6 +90,18 @@ std::optional<State::Transition> LostState::getTransition()
     {
         State::Transition transition;
         transition.action = State::Action::Exit;
+        return transition;
+    }
+
+    if (restart)
+    {
+        auto newGameCtx = std::make_shared<GameStateCtx>(
+            ctx, gameCtx->getDifficulty(), gameCtx->getParams());
+
+        State::Transition transition;
+        transition.action = State::Action::Change;
+        transition.state =
+            std::make_unique<PlayingState>(std::move(newGameCtx));
         return transition;
     }
 

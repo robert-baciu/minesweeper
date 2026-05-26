@@ -11,7 +11,8 @@ std::vector<LeaderboardEntry> LeaderboardManager::loadAll()
 {
     std::vector<LeaderboardEntry> scores;
 
-    if (!std::filesystem::exists(LEADERBOARD_FILE))
+    if (!std::filesystem::exists(LEADERBOARD_FILE) ||
+        std::filesystem::file_size(LEADERBOARD_FILE) == 0)
     {
         return scores;
     }
@@ -19,10 +20,11 @@ std::vector<LeaderboardEntry> LeaderboardManager::loadAll()
     csv::CSVReader reader(LEADERBOARD_FILE);
     for (csv::CSVRow &row : reader)
     {
-        std::string difficulty = row["difficulty"].get<std::string>();
+        Difficulty difficulty =
+            DifficultyUtil::fromString(row["difficulty"].get<std::string>());
         auto time = row["time"].get<float>();
 
-        LeaderboardEntry entry{difficulty, time};
+        LeaderboardEntry entry(difficulty, time);
         scores.push_back(entry);
     }
     return scores;
@@ -52,7 +54,8 @@ void LeaderboardManager::save(std::vector<LeaderboardEntry> const &entries)
 
     for (auto const &entry : entries)
     {
-        std::string difficulty = entry.getDifficulty();
+        std::string difficulty =
+            DifficultyUtil::toString(entry.getDifficulty());
         std::string time = std::to_string(entry.getTime());
 
         writer << std::vector<std::string>{difficulty, time};

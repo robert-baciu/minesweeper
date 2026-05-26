@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Difficulty.hpp"
 #include "DifficultyParams.hpp"
 #include "PlayingHeader.hpp"
 #include "StateCtx.hpp"
@@ -7,8 +8,10 @@
 class GameStateCtx : public StateCtx
 {
   public:
-    GameStateCtx(StateCtxPtr const &ctx, DifficultyParams params_);
+    GameStateCtx(StateCtxPtr const &ctx, Difficulty difficulty_,
+                 DifficultyParams params_);
 
+    Difficulty getDifficulty() const;
     DifficultyParams const &getParams() const;
 
     sf::Vector2f getGridSize() const;
@@ -40,6 +43,7 @@ class GameStateCtx : public StateCtx
     static constexpr auto PADDING = sf::Vector2f(0.5f * PlayingGrid::CELL_SIZE,
                                                  0.5f * PlayingGrid::CELL_SIZE);
 
+    Difficulty difficulty;
     DifficultyParams params;
 
     sf::Vector2f gridSize;

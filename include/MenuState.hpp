@@ -16,17 +16,22 @@ class MenuState : public State
   public:
     explicit MenuState(StateCtxPtr ctx_);
 
+    void buildGui();
+    void buildPlayParams();
+
+    [[nodiscard]] DifficultyParams getPlayParams() const;
+
     [[nodiscard]] std::optional<Transition> getTransition() override;
 
     void print(std::ostream &os) const override;
 
   private:
-    [[nodiscard]] DifficultyParams getPlaySettings(Difficulty difficulty) const;
+    std::map<Difficulty, DifficultyParams> playParams;
 
-    bool transitionToPlay = false;
-    bool transitionToLeaderboard = false;
+    bool gotoPlayClassic = false;
+    bool gotoLeaderboard = false;
 
-    tgui::ComboBox::Ptr diffBox;
+    tgui::ComboBox::Ptr difficultyBox;
     tgui::EditBox::Ptr colsEdit;
     tgui::EditBox::Ptr rowsEdit;
     tgui::EditBox::Ptr densityEdit;

@@ -1,18 +1,16 @@
 #pragma once
 
-#include <string>
+#include "Difficulty.hpp"
 
 class LeaderboardEntry
 {
   public:
-    // TODO: String or enum?
-    LeaderboardEntry(std::string difficulty_, float time_);
+    LeaderboardEntry(Difficulty difficulty, float time);
 
-    [[nodiscard]] std::string getDifficulty() const;
-
+    [[nodiscard]] Difficulty getDifficulty() const;
     [[nodiscard]] float getTime() const;
 
   private:
-    std::string difficulty;
+    Difficulty difficulty;
     float time;
 };

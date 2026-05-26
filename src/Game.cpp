@@ -90,7 +90,7 @@ void Game::handleEvents()
         {
             if (!requestedExit)
             {
-                currentState->requestExit();
+                currentState->requestExit(); // TODO: Is it required?
                 requestedExit = true;
             }
             continue;

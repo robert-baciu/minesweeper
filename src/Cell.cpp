@@ -2,6 +2,7 @@
 
 #include "CellError.hpp"
 
+// cppcheck-suppress unusedFunction
 unsigned int Cell::getAdjacentMines() const
 {
     if (mine == true)
@@ -12,31 +13,40 @@ unsigned int Cell::getAdjacentMines() const
     return adjacentMines;
 }
 
+// cppcheck-suppress unusedFunction
 bool Cell::isMine() const
 {
     return mine;
 }
 
+// cppcheck-suppress unusedFunction
 bool Cell::isRevealed() const
 {
+    if (mine == true)
+    {
+        throw MineCellError("Cell::isRevealed()");
+    }
     return revealed;
 }
 
+// cppcheck-suppress unusedFunction
 bool Cell::isFlagged() const
 {
     return flagged;
 }
 
-void Cell::setAdjacentMines(unsigned int adjacentMines)
+// cppcheck-suppress unusedFunction
+void Cell::setAdjacentMines(unsigned int adjacentMines_)
 {
     if (mine == true)
     {
         throw MineCellError("Cell::setAdjacentMines()");
     }
 
-    this->adjacentMines = adjacentMines;
+    adjacentMines = adjacentMines_;
 }
 
+// cppcheck-suppress unusedFunction
 void Cell::setMine()
 {
     if (revealed == true)
@@ -48,6 +58,7 @@ void Cell::setMine()
     flagged = false;
 }
 
+// cppcheck-suppress unusedFunction
 void Cell::setRevealed()
 {
     if (mine == true)
@@ -59,14 +70,15 @@ void Cell::setRevealed()
     flagged = false;
 }
 
-void Cell::setFlagged(bool flagged)
+// cppcheck-suppress unusedFunction
+void Cell::setFlagged(bool flagged_)
 {
     if (revealed == true)
     {
         throw RevealedCellError("Cell::setFlagged()");
     }
 
-    this->flagged = flagged;
+    flagged = flagged_;
 }
 
 std::ostream &operator<<(std::ostream &os, Cell const &cell)

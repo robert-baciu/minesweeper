@@ -1,5 +1,7 @@
 #include "DifficultyParams.hpp"
 
+#include <string>
+
 DifficultyParams::DifficultyParams(int cols, int rows, float mineDensity)
     : cols(cols),
       rows(rows),
@@ -7,41 +9,63 @@ DifficultyParams::DifficultyParams(int cols, int rows, float mineDensity)
 {
 }
 
+// cppcheck-suppress unusedFunction
 int DifficultyParams::getCols() const
 {
     return cols;
 }
 
+// cppcheck-suppress unusedFunction
 int DifficultyParams::getRows() const
 {
     return rows;
 }
 
+// cppcheck-suppress unusedFunction
 float DifficultyParams::getMineDensity() const
 {
     return mineDensity;
 }
 
-DifficultyParams::Builder &DifficultyParams::Builder::withCols(int cols)
+// cppcheck-suppress unusedFunction
+DifficultyParams::Builder &DifficultyParams::Builder::withCols(int cols_)
 {
-    this->cols = cols;
+    cols = cols_;
     return *this;
 }
 
-DifficultyParams::Builder &DifficultyParams::Builder::withRows(int rows)
+// cppcheck-suppress unusedFunction
+DifficultyParams::Builder &DifficultyParams::Builder::withRows(int rows_)
 {
-    this->rows = rows;
+    rows = rows_;
     return *this;
 }
 
 DifficultyParams::Builder &
-DifficultyParams::Builder::withMineDensity(float mineDensity)
+// cppcheck-suppress unusedFunction
+DifficultyParams::Builder::withMineDensity(float mineDensity_)
 {
-    this->mineDensity = mineDensity;
+    mineDensity = mineDensity_;
     return *this;
 }
 
+// cppcheck-suppress unusedFunction
 DifficultyParams DifficultyParams::Builder::build() const
 {
-    return DifficultyParams{cols, rows, mineDensity};
+    if (!cols.has_value())
+    {
+        throw DifficultyParamsBuilderError(std::string("cols"));
+    }
+
+    if (!rows.has_value())
+    {
+        throw DifficultyParamsBuilderError(std::string("rows"));
+    }
+
+    if (!mineDensity.has_value())
+    {
+        throw DifficultyParamsBuilderError(std::string("mineDensity"));
+    }
+
+    return {cols.value(), rows.value(), mineDensity.value()};
 }

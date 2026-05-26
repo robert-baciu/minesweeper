@@ -2,6 +2,7 @@
 
 #include <utility>
 
+// cppcheck-suppress unusedFunction
 std::string DifficultyUtil::toString(Difficulty difficulty)
 {
     auto it = STRINGS.find(difficulty);
@@ -14,6 +15,7 @@ std::string DifficultyUtil::toString(Difficulty difficulty)
     std::unreachable();
 }
 
+// cppcheck-suppress unusedFunction
 Difficulty DifficultyUtil::fromString(std::string const &string)
 {
     for (auto const &[key, value] : STRINGS)
@@ -28,6 +30,7 @@ Difficulty DifficultyUtil::fromString(std::string const &string)
     std::unreachable();
 }
 
+// cppcheck-suppress unusedFunction
 std::vector<Difficulty> DifficultyUtil::all()
 {
     return std::vector<Difficulty>{
@@ -36,6 +39,7 @@ std::vector<Difficulty> DifficultyUtil::all()
     };
 }
 
+// cppcheck-suppress unusedFunction
 std::vector<std::string> DifficultyUtil::allStrings()
 {
     std::vector<std::string> strings;

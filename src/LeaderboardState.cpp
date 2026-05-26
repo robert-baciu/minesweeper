@@ -23,46 +23,54 @@ LeaderboardState::LeaderboardState(StateCtxPtr ctx_)
     listView->setColumnExpanded(0, true);
     listView->setColumnExpanded(1, true);
 
-    // listView->setColumnAlignment(0, tgui::HorizontalAlignment::Center);
-    // listView->setColumnAlignment(1, tgui::HorizontalAlignment::Center);
+    listView->setColumnAlignment(0, tgui::HorizontalAlignment::Center);
+    listView->setColumnAlignment(1, tgui::HorizontalAlignment::Center);
 
     listView->getRenderer()->setPadding(tgui::Padding(10, 10, 10, 10));
-
-    std::vector<LeaderboardEntry> entries = LeaderboardManager::loadAll();
-
-    std::sort(entries.begin(), entries.end(), [](auto const &x, auto const &y)
-              { return x.getTime() < y.getTime(); });
 
     listView->setTextSize(32);
     listView->setItemHeight(32);
 
-    std::map<std::string, std::vector<LeaderboardEntry>> groups;
-    for (auto const &entry : entries)
+    std::vector<LeaderboardEntry> allEntries = LeaderboardManager::loadAll();
+    std::map<Difficulty, std::vector<LeaderboardEntry>> entriesByDifficulty;
+    for (auto const &entry : allEntries)
     {
-        groups[entry.getDifficulty()].push_back(entry);
+        entriesByDifficulty[entry.getDifficulty()].push_back(entry);
     }
 
-    for (auto &[difficulty, entries] : groups)
+    for (auto &[difficulty, entries] : entriesByDifficulty)
     {
         std::sort(entries.begin(), entries.end(),
                   [](auto const &a, auto const &b)
                   { return a.getTime() < b.getTime(); });
     }
 
-    // TODO: all difficulties in order, maybe - for no played difficulties
-    for (auto const &[difficulty, entries] : groups)
+    for (auto const difficulty : DifficultyUtil::all())
     {
-        for (size_t i = 0; i < 3; i++)
+        if (entriesByDifficulty.find(difficulty) == entriesByDifficulty.end() ||
+            entriesByDifficulty[difficulty].empty())
         {
-            auto const &entry = entries[i];
+            std::string difficultyStr = DifficultyUtil::toString(difficulty);
+            listView->addItem({difficultyStr, "-"});
+        }
+        else
+        {
+            auto const &entries = entriesByDifficulty.at(difficulty);
 
-            std::string difficulty = entry.getDifficulty();
+            size_t count = std::min(entries.size(), static_cast<size_t>(3));
 
-            std::stringstream stream;
-            stream << std::fixed << std::setprecision(2) << entry.getTime();
-            std::string time = stream.str();
+            for (size_t i = 0; i < count; i++)
+            {
+                std::string difficultyStr =
+                    DifficultyUtil::toString(difficulty);
 
-            listView->addItem({difficulty, time});
+                auto const &entry = entries[i];
+                std::stringstream stream;
+                stream << std::fixed << std::setprecision(2) << entry.getTime();
+                std::string timeStr = stream.str();
+
+                listView->addItem({difficultyStr, timeStr});
+            }
         }
     }
 }

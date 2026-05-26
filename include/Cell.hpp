@@ -10,10 +10,10 @@ class Cell
     [[nodiscard]] bool isRevealed() const;
     [[nodiscard]] bool isFlagged() const;
 
-    void setAdjacentMines(unsigned int adjacentMines);
+    void setAdjacentMines(unsigned int adjacentMines_);
     void setMine();
     void setRevealed();
-    void setFlagged(bool flagged);
+    void setFlagged(bool flagged_);
 
     friend std::ostream &operator<<(std::ostream &os, Cell const &cell);
 

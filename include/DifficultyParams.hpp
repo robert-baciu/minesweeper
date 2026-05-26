@@ -1,5 +1,9 @@
 #pragma once
 
+#include <optional>
+#include <stdexcept>
+#include <string>
+
 class DifficultyParams
 {
   public:
@@ -17,18 +21,28 @@ class DifficultyParams
     float mineDensity;
 };
 
-class DifficultyParams::Builder
+class DifficultyParamsBuilderError : public std::runtime_error
 {
   public:
-    Builder() = default;
+    explicit DifficultyParamsBuilderError(std::string const &field)
+        : std::runtime_error(
+              std::string("DifficultyParams::Builder is missing field \"") +
+              field + std::string("\""))
+    {
+    }
+};
 
-    Builder &withCols(int cols);
-    Builder &withRows(int rows);
-    Builder &withMineDensity(float mineDensity);
+class DifficultyParams::Builder
+{
+  private:
+    std::optional<int> cols;
+    std::optional<int> rows;
+    std::optional<float> mineDensity;
+
+  public:
+    Builder &withCols(int cols_);
+    Builder &withRows(int rows_);
+    Builder &withMineDensity(float mineDensity_);
 
     [[nodiscard]] DifficultyParams build() const;
-
-    int cols;
-    int rows;
-    float mineDensity;
 };

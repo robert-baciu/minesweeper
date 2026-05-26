@@ -31,8 +31,6 @@ PlayingState::PlayingState(GameStateCtxPtr gameCtx_)
         sf::Vector2f(gameCtx->getHeaderSize().x / gameCtx->getWindowSize().x,
                      gameCtx->getHeaderSize().y / gameCtx->getWindowSize().y)));
 
-    // TODO: Replace {} for () where possible
-
     gameCtx->getGridView().setSize(gameCtx->getGridSize());
     gameCtx->getGridView().setCenter(gameCtx->getGridSize() / 2.0f);
     gameCtx->getGridView().setViewport(sf::FloatRect(
@@ -95,7 +93,7 @@ void PlayingState::handleEvent(std::optional<sf::Event> const &event)
     }
 }
 
-// TODO: pause on Esc and exit/main menu with two separate buttons
+// TODO: PausedState on Esc - MENU & EXIT buttons
 
 void PlayingState::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
@@ -125,8 +123,8 @@ std::optional<State::Transition> PlayingState::getTransition()
 
     if (restart)
     {
-        auto newGameCtx =
-            std::make_shared<GameStateCtx>(ctx, gameCtx->getParams());
+        auto newGameCtx = std::make_shared<GameStateCtx>(
+            ctx, gameCtx->getDifficulty(), gameCtx->getParams());
 
         State::Transition transition;
         transition.action = State::Action::Change;

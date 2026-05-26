@@ -1,7 +1,9 @@
 #include "GameStateCtx.hpp"
 
-GameStateCtx::GameStateCtx(StateCtxPtr const &ctx, DifficultyParams params_)
+GameStateCtx::GameStateCtx(StateCtxPtr const &ctx, Difficulty difficulty_,
+                           DifficultyParams params_)
     : StateCtx(*ctx),
+      difficulty(difficulty_),
       params(params_),
 
       gridSize(static_cast<float>(params.getCols()) * PlayingGrid::CELL_SIZE,
@@ -20,6 +22,11 @@ GameStateCtx::GameStateCtx(StateCtxPtr const &ctx, DifficultyParams params_)
       mineCount(static_cast<unsigned int>(static_cast<float>(cellCount) *
                                           params.getMineDensity()))
 {
+}
+
+Difficulty GameStateCtx::getDifficulty() const
+{
+    return difficulty;
 }
 
 DifficultyParams const &GameStateCtx::getParams() const

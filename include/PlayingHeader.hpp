@@ -22,6 +22,7 @@ class PlayingHeader : public sf::Drawable
     void startClock();
 
     sf::Sprite const &getSmiley();
+    float getTime() const;
 
     void setHeaderSize(sf::Vector2f size);
     void setRemainingMines(int remaining);

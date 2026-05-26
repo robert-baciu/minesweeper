@@ -4,7 +4,10 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/System/Vector2.hpp>
 
+#include "LeaderboardEntry.hpp"
+#include "LeaderboardManager.hpp"
 #include "MenuState.hpp"
+#include "PlayingState.hpp"
 
 WonState::WonState(GameStateCtxPtr gameCtx_)
     : GameState(std::move(gameCtx_))
@@ -14,19 +17,27 @@ WonState::WonState(GameStateCtxPtr gameCtx_)
         gameCtx->getAssets().getTexture("smiley-won"));
     gameCtx->getHeader().setRemainingMines(0);
 
-    // TODO:
-    // LeaderboardEntry entry();
-    // LeaderboardManager::save().
+    LeaderboardEntry entry(gameCtx->getDifficulty(),
+                           gameCtx->getHeader().getTime());
+    LeaderboardManager::save(entry);
 }
 
 void WonState::handleEvent(std::optional<sf::Event> const &event)
 {
-    if (event->is<sf::Event::KeyPressed>())
+    if (event->is<sf::Event::MouseButtonPressed>())
     {
-        auto const *key = event->getIf<sf::Event::KeyPressed>();
-        if (key->scancode == sf::Keyboard::Scancode::Enter)
+        auto const *mouse = event->getIf<sf::Event::MouseButtonPressed>();
+
+        sf::Vector2f headerMousePos =
+            gameCtx->getWindow().get().mapPixelToCoords(
+                mouse->position, gameCtx->getHeaderView());
+
+        if (mouse->button == sf::Mouse::Button::Left &&
+            gameCtx->getHeader().getSmiley().getGlobalBounds().contains(
+                headerMousePos))
         {
-            transitionToMenu = true;
+            restart = true;
+            return;
         }
     }
 }
@@ -72,6 +83,18 @@ std::optional<State::Transition> WonState::getTransition()
     {
         State::Transition transition;
         transition.action = State::Action::Exit;
+        return transition;
+    }
+
+    if (restart)
+    {
+        auto newGameCtx = std::make_shared<GameStateCtx>(
+            ctx, gameCtx->getDifficulty(), gameCtx->getParams());
+
+        State::Transition transition;
+        transition.action = State::Action::Change;
+        transition.state =
+            std::make_unique<PlayingState>(std::move(newGameCtx));
         return transition;
     }
 

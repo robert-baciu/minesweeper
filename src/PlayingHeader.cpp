@@ -69,8 +69,11 @@ void PlayingHeader::draw(sf::RenderTarget &target,
 
 void PlayingHeader::update()
 {
-    clockText.setString(
-        std::to_string(static_cast<int>(clock.getElapsedTime().asSeconds())));
+    std::stringstream clockSeconds;
+    clockSeconds << std::fixed << std::setprecision(1)
+                 << clock.getElapsedTime().asSeconds();
+
+    clockText.setString(clockSeconds.str());
     clockText.setOrigin(
         sf::Vector2f(0.0f, clockText.getLocalBounds().getCenter().y));
 
@@ -83,4 +86,9 @@ void PlayingHeader::update()
 void PlayingHeader::startClock()
 {
     clock.start();
+}
+
+float PlayingHeader::getTime() const
+{
+    return clock.getElapsedTime().asSeconds();
 }

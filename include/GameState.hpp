@@ -8,8 +8,6 @@
 class GameState : public State
 {
   public:
-    // TODO: Move into own file
-
     explicit GameState(GameStateCtxPtr gameCtx_);
 
     void print(std::ostream &os) const override;
