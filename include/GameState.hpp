@@ -8,12 +8,16 @@
 class GameState : public State
 {
   public:
-    explicit GameState(GameStateCtxPtr gameCtx_);
+    explicit GameState(std::unique_ptr<StateCtx> gameCtx_);
+
+    void handleEvent(std::optional<sf::Event> const &event) override;
+
+    void update(double dt) override;
 
     void print(std::ostream &os) const override;
 
   protected:
-    GameStateCtxPtr gameCtx;
+    GameStateCtx *gameCtx;
 
     bool restart;
 };

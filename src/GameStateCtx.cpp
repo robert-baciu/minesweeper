@@ -1,27 +1,30 @@
 #include "GameStateCtx.hpp"
 
-GameStateCtx::GameStateCtx(StateCtxPtr const &ctx, Difficulty difficulty_,
-                           DifficultyParams params_)
-    : StateCtx(*ctx),
-      difficulty(difficulty_),
-      params(params_),
+#include <SFML/System/Vector2.hpp>
 
-      gridSize(static_cast<float>(params.getCols()) * PlayingGrid::CELL_SIZE,
-               static_cast<float>(params.getRows()) * PlayingGrid::CELL_SIZE),
-      headerSize(gridSize.x, HEADER_H),
-      windowSize(PADDING.x + gridSize.x + PADDING.x,
-                 PADDING.y + HEADER_H + PADDING.y + gridSize.y + PADDING.y),
+#include "PlayingGrid.hpp"
 
+GameStateCtx::GameStateCtx(StateCtx &ctx, Difficulty difficulty,
+                           DifficultyParams params)
+    : StateCtx(ctx.getAssets(), ctx.getWindow()), // TODO: copy constructor
+      difficulty(difficulty),
+      params(params),
+
+      gridPos(PADDING.x, PADDING.y + HEADER_H + PADDING.y),
+      grid(*this, params, gridPos),
+
+      headerSize(grid.getSize().x, HEADER_H),
       headerPos(PADDING.x, PADDING.y),
-      gridPos(PADDING.x, headerPos.y + headerSize.y + PADDING.y),
 
-      header(ctx),
-      grid(ctx, params.getCols(), params.getRows()),
-
-      cellCount(params.getCols() * params.getRows()),
-      mineCount(static_cast<unsigned int>(static_cast<float>(cellCount) *
-                                          params.getMineDensity()))
+      header(*this, headerSize, headerPos)
 {
+    sf::Vector2f windowSize = {PADDING.x + grid.getSize().x + PADDING.x,
+                               PADDING.y + headerSize.y + PADDING.y +
+                                   grid.getSize().y + PADDING.y};
+
+    ctx.getWindow().get().setSize(sf::Vector2u(windowSize));
+    ctx.getWindow().get().setView(
+        sf::View(sf::FloatRect(sf::Vector2f(0, 0), windowSize)));
 }
 
 Difficulty GameStateCtx::getDifficulty() const
@@ -32,61 +35,6 @@ Difficulty GameStateCtx::getDifficulty() const
 DifficultyParams const &GameStateCtx::getParams() const
 {
     return params;
-}
-
-sf::Vector2f GameStateCtx::getGridSize() const
-{
-    return gridSize;
-}
-
-sf::Vector2f GameStateCtx::getHeaderSize() const
-{
-    return headerSize;
-}
-
-sf::Vector2f GameStateCtx::getWindowSize() const
-{
-    return windowSize;
-}
-
-sf::Vector2f GameStateCtx::getHeaderPos() const
-{
-    return headerPos;
-}
-
-sf::Vector2f GameStateCtx::getGridPos() const
-{
-    return gridPos;
-}
-
-sf::View &GameStateCtx::getHeaderView()
-{
-    return headerView;
-}
-
-sf::View const &GameStateCtx::getHeaderView() const
-{
-    return headerView;
-}
-
-sf::View &GameStateCtx::getGridView()
-{
-    return gridView;
-}
-
-sf::View const &GameStateCtx::getGridView() const
-{
-    return gridView;
-}
-
-unsigned int GameStateCtx::getCellCount() const
-{
-    return cellCount;
-}
-
-unsigned int GameStateCtx::getMineCount() const
-{
-    return mineCount;
 }
 
 PlayingGrid &GameStateCtx::getGrid()

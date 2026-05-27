@@ -16,20 +16,9 @@ class DifficultyParams
   private:
     DifficultyParams(int cols, int rows, float mineDensity);
 
-    int cols;
-    int rows;
-    float mineDensity;
-};
-
-class DifficultyParamsBuilderError : public std::runtime_error
-{
-  public:
-    explicit DifficultyParamsBuilderError(std::string const &field)
-        : std::runtime_error(
-              std::string("DifficultyParams::Builder is missing field \"") +
-              field + std::string("\""))
-    {
-    }
+    int const cols;
+    int const rows;
+    float const mineDensity;
 };
 
 class DifficultyParams::Builder
@@ -45,4 +34,15 @@ class DifficultyParams::Builder
     Builder &withMineDensity(float mineDensity_);
 
     [[nodiscard]] DifficultyParams build() const;
+};
+
+class DifficultyParamsBuilderError : public std::runtime_error
+{
+  public:
+    explicit DifficultyParamsBuilderError(std::string const &field)
+        : std::runtime_error(
+              std::string("DifficultyParams builder is missing field \"") +
+              field + std::string("\""))
+    {
+    }
 };

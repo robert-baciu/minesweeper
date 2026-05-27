@@ -2,19 +2,19 @@
 
 #include <optional>
 #include <TGUI/Font.hpp>
-#include <utility>
 
-State::State(StateCtxPtr ctx_)
-    : ctx(std::move(ctx_))
+State::State(std::unique_ptr<StateCtx> ctx_)
+    : ctx(std::move(ctx_)),
+      requestedExit(false)
 {
     ctx->getWindow().getGui().removeAllWidgets();
 }
 
-void State::update([[maybe_unused]] double dt)
+void State::handleEvent([[maybe_unused]] std::optional<sf::Event> const &event)
 {
 }
 
-void State::handleEvent([[maybe_unused]] std::optional<sf::Event> const &event)
+void State::update([[maybe_unused]] double dt)
 {
 }
 

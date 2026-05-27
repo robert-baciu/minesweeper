@@ -2,6 +2,14 @@
 
 #include "CellError.hpp"
 
+Cell::Cell()
+    : adjacentMines(0),
+      mine(false),
+      revealed(false),
+      flagged(false)
+{
+}
+
 // cppcheck-suppress unusedFunction
 unsigned int Cell::getAdjacentMines() const
 {
@@ -22,10 +30,6 @@ bool Cell::isMine() const
 // cppcheck-suppress unusedFunction
 bool Cell::isRevealed() const
 {
-    if (mine == true)
-    {
-        throw MineCellError("Cell::isRevealed()");
-    }
     return revealed;
 }
 
@@ -84,6 +88,7 @@ void Cell::setFlagged(bool flagged_)
 std::ostream &operator<<(std::ostream &os, Cell const &cell)
 {
     os << "Cell[";
+
     if (cell.mine == true)
     {
         os << "Mine";
@@ -103,6 +108,7 @@ std::ostream &operator<<(std::ostream &os, Cell const &cell)
     {
         os << "Revealed";
     }
+
     os << "]";
     return os;
 }

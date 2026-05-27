@@ -2,18 +2,22 @@
 
 #include <memory>
 #include <TGUI/Loading/Theme.hpp>
+#include <TGUI/String.hpp>
 #include <TGUI/Widgets/Button.hpp>
 #include <TGUI/Widgets/ComboBox.hpp>
 #include <TGUI/Widgets/Group.hpp>
 #include <TGUI/Widgets/Label.hpp>
 #include <utility>
 
+#include "Difficulty.hpp"
 #include "LeaderboardState.hpp"
 #include "PlayingState.hpp"
 #include "State.hpp"
 
-MenuState::MenuState(StateCtxPtr ctx_)
-    : State(std::move(ctx_))
+MenuState::MenuState(std::unique_ptr<StateCtx> ctx_)
+    : State(std::move(ctx_)),
+      gotoPlayClassic(false),
+      gotoLeaderboard(false)
 {
     ctx->getWindow().get().setSize(ctx->getWindow().getDefaultSize());
 
@@ -24,65 +28,64 @@ MenuState::MenuState(StateCtxPtr ctx_)
 void MenuState::buildGui()
 {
     auto ELEM_WIDTH = "80%";
-    auto ELEM_HEIGHT = 50.0f;
+    auto ELEM_HEIGHT = 64.0f;
 
     auto &gui = ctx->getWindow().getGui();
 
-    // TODO: setOrigin
-
     auto title = tgui::Label::create("MINESWEEPER");
     title->setTextSize(64);
-    title->setPosition("50% - (width / 2)", 40.0f);
+    title->setOrigin(0.5f, 0.0f);
+    title->setPosition("50%", 40.0f);
 
     difficultyBox = tgui::ComboBox::create();
     difficultyBox->setSize(ELEM_WIDTH, ELEM_HEIGHT);
-    difficultyBox->setPosition("50% - (width / 2)", "TitleLabel.bottom + 40");
-    for (std::string const &difficultyStr : DifficultyUtil::allStrings())
-    {
-        difficultyBox->addItem(difficultyStr);
-    }
-    difficultyBox->setSelectedItemByIndex(1);
+    difficultyBox->setOrigin(0.5f, 0.0f);
+    difficultyBox->setPosition("50%", "TitleLabel.bottom + 40");
 
-    auto GROUP_PADDING_V = 10.0f;
     auto group = tgui::Group::create();
-    group->setSize(ELEM_WIDTH, ELEM_HEIGHT * 3 + GROUP_PADDING_V * 2);
-    group->setPosition("50% - (width / 2)", "DifficultyBox.bottom + 10");
+    group->setSize(ELEM_WIDTH, "DensityEdit.bottom");
+    group->setOrigin(0.5f, 0.0f);
+    group->setPosition("50%", "DifficultyBox.bottom + 10");
 
     colsEdit = tgui::EditBox::create();
-    colsEdit->setDefaultText("Columns [>= 8]");
+    colsEdit->setDefaultText("Columns [" + tgui::String(MIN_COLS) + "-" +
+                             tgui::String(MAX_COLS) + "]");
     colsEdit->setInputValidator(tgui::EditBox::Validator::UInt);
     colsEdit->setSize("100%", ELEM_HEIGHT);
     colsEdit->setPosition(0, 0);
 
     rowsEdit = tgui::EditBox::create();
-    rowsEdit->setDefaultText("Rows [>= 8]");
+    rowsEdit->setDefaultText("Rows [" + tgui::String(MIN_ROWS) + "-" +
+                             tgui::String(MAX_ROWS) + "]");
     rowsEdit->setInputValidator(tgui::EditBox::Validator::UInt);
     rowsEdit->setSize("100%", ELEM_HEIGHT);
-    rowsEdit->setPosition(0, ELEM_HEIGHT + GROUP_PADDING_V);
+    rowsEdit->setPosition(0, "ColsEdit.bottom + 10");
 
     densityEdit = tgui::EditBox::create();
-    densityEdit->setDefaultText("Mine density [0-100]");
+    densityEdit->setDefaultText("Mine density [" + tgui::String(MIN_DENSITY) +
+                                "-" + tgui::String(MAX_DENSITY) + "]");
     densityEdit->setInputValidator(tgui::EditBox::Validator::UInt);
     densityEdit->setSize("100%", ELEM_HEIGHT);
-    densityEdit->setPosition(0, (ELEM_HEIGHT + GROUP_PADDING_V) * 2);
+    densityEdit->setPosition(0, "RowsEdit.bottom + 10");
 
     auto playClassicBtn = tgui::Button::create("CLASSIC");
     playClassicBtn->setSize(ELEM_WIDTH, ELEM_HEIGHT);
-    playClassicBtn->setPosition("50% - (width / 2)",
-                                "DifficultyBox.bottom + 10");
+    playClassicBtn->setOrigin(0.5f, 0.0f);
+    playClassicBtn->setPosition("50%", "DifficultyBox.bottom + 10");
 
     auto leaderboardBtn = tgui::Button::create("LEADERBOARD");
     leaderboardBtn->setSize(ELEM_WIDTH, ELEM_HEIGHT);
-    leaderboardBtn->setPosition("50% - (width / 2)",
-                                "PlayClassicButton.bottom + 10");
+    leaderboardBtn->setOrigin(0.5f, 0.0f);
+    leaderboardBtn->setPosition("50%", "PlayClassicButton.bottom + 10");
 
     auto exitBtn = tgui::Button::create("EXIT");
     exitBtn->setSize(ELEM_WIDTH, ELEM_HEIGHT);
-    exitBtn->setPosition("50% - (width / 2)", "LeaderboardButton.bottom + 10");
+    exitBtn->setOrigin(0.5f, 0.0f);
+    exitBtn->setPosition("50%", "LeaderboardButton.bottom + 10");
 
-    group->add(colsEdit);
-    group->add(rowsEdit);
-    group->add(densityEdit);
+    group->add(colsEdit, "ColsEdit");
+    group->add(rowsEdit, "RowsEdit");
+    group->add(densityEdit, "DensityEdit");
 
     gui.add(title, "TitleLabel");
     gui.add(difficultyBox, "DifficultyBox");
@@ -90,9 +93,40 @@ void MenuState::buildGui()
     gui.add(leaderboardBtn, "LeaderboardButton");
     gui.add(exitBtn, "ExitButton");
 
+    for (std::string const &difficultyStr : DifficultyUtil::allStrings())
+    {
+        difficultyBox->addItem(difficultyStr);
+    }
+
+    difficultyBox->setSelectedItem(
+        DifficultyUtil::toString(Difficulty::Medium));
+
+    validateEditBox(colsEdit, MIN_COLS, MAX_COLS);
+    validateEditBox(rowsEdit, MIN_ROWS, MAX_ROWS);
+    validateEditBox(densityEdit, MIN_DENSITY, MAX_DENSITY);
+
+    auto checkCustomParams = [this, playClassicBtn]()
+    {
+        auto c = colsEdit->getText();
+        auto r = rowsEdit->getText();
+        auto d = densityEdit->getText();
+
+        bool isValid = !c.empty() && !r.empty() && !d.empty() &&
+                       c.toUInt() >= MIN_COLS && c.toUInt() <= MAX_COLS &&
+                       r.toUInt() >= MIN_ROWS && r.toUInt() <= MAX_ROWS &&
+                       d.toUInt() >= MIN_DENSITY && d.toUInt() <= MAX_DENSITY;
+
+        playClassicBtn->setEnabled(isValid);
+        playClassicBtn->getRenderer()->setOpacity(isValid ? 1.0f : 0.9f);
+    };
+
+    colsEdit->onTextChange(checkCustomParams);
+    rowsEdit->onTextChange(checkCustomParams);
+    densityEdit->onTextChange(checkCustomParams);
+
     difficultyBox->onItemSelect(
-        // TODO:
-        [&gui, group, playClassicBtn](tgui::String const &item)
+        [&gui, checkCustomParams, group,
+         playClassicBtn](tgui::String const &item)
         {
             if (item == "Custom")
             {
@@ -100,7 +134,8 @@ void MenuState::buildGui()
                 {
                     gui.add(group, "CustomParamsGroup");
                     playClassicBtn->setPosition(
-                        "50% - (width / 2)", "CustomParamsGroup.bottom + 10");
+                        "50%", "CustomParamsGroup.bottom + 10");
+                    checkCustomParams();
                 }
             }
             else
@@ -108,8 +143,9 @@ void MenuState::buildGui()
                 if (group->getParent() != nullptr)
                 {
                     gui.remove(group);
-                    playClassicBtn->setPosition(
-                        "50% - (width / 2)", "CustomParamsGroup.bottom + 10");
+                    playClassicBtn->setPosition("50%",
+                                                "DifficultyBox.bottom + 10");
+                    playClassicBtn->setEnabled(true);
                 }
             }
         });
@@ -158,7 +194,6 @@ DifficultyParams MenuState::getPlayParams() const
         return playParams.at(difficulty);
     }
 
-    // TODO: Validation
     int cols = std::stoi(colsEdit->getText().toStdString());
     int rows = std::stoi(rowsEdit->getText().toStdString());
     float mineDensity =
@@ -195,7 +230,7 @@ std::optional<State::Transition> MenuState::getTransition()
             difficultyBox->getSelectedItem().toStdString());
 
         auto gameCtx =
-            std::make_shared<GameStateCtx>(ctx, difficulty, getPlayParams());
+            std::make_unique<GameStateCtx>(*ctx, difficulty, getPlayParams());
 
         State::Transition transition;
         transition.action = State::Action::Change;
@@ -204,6 +239,30 @@ std::optional<State::Transition> MenuState::getTransition()
     }
 
     return std::nullopt;
+}
+
+void MenuState::validateEditBox(tgui::EditBox::Ptr &editBox,
+                                unsigned int minVal, unsigned int maxVal)
+{
+    editBox->onUnfocus(
+        [editBox, minVal, maxVal]()
+        {
+            tgui::String text = editBox->getText();
+            if (text.empty())
+            {
+                return;
+            }
+
+            unsigned int val = text.toUInt();
+            if (val < minVal)
+            {
+                editBox->setText(tgui::String(minVal));
+            }
+            else if (val > maxVal)
+            {
+                editBox->setText(tgui::String(maxVal));
+            }
+        });
 }
 
 void MenuState::print(std::ostream &os) const

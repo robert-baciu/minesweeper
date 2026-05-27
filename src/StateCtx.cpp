@@ -18,7 +18,9 @@ Window &StateCtx::getWindow() const
 
 std::ostream &operator<<(std::ostream &os, StateCtx const &ctx)
 {
-    os << "State::Context[assets=" << ctx.getAssets()
-       << ", window=" << ctx.getWindow() << "]";
+    os << "StateCtx[";
+    os << "assets=" << ctx.getAssets() << ", ";
+    os << "window=" << ctx.getWindow();
+    os << "]";
     return os;
 }

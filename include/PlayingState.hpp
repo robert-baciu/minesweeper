@@ -15,13 +15,11 @@
 class PlayingState : public GameState
 {
   public:
-    explicit PlayingState(GameStateCtxPtr gameCtx_);
-
-    void handleEvent(std::optional<sf::Event> const &event) override;
-
-    void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
+    explicit PlayingState(std::unique_ptr<StateCtx> gameCtx_);
 
     void update(double dt) override;
+
+    void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
     [[nodiscard]] std::optional<Transition> getTransition() override;
 
@@ -35,11 +33,8 @@ class PlayingState : public GameState
     void chordingReveal(int col, int row);
     void floodReveal(int col, int row);
 
-    unsigned int revealedCount;
-    unsigned int flagCount;
-
     bool lost;
     bool won;
 
-    sf::Vector2i detonatedPos;
+    bool started;
 };

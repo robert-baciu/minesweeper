@@ -5,7 +5,6 @@
 #include <memory>
 #include <SFML/Window/Keyboard.hpp>
 
-#include "AssetManager.hpp"
 #include "State.hpp"
 #include "Window.hpp"
 
@@ -15,6 +14,7 @@ class Game
     Game();
 
     bool isRunning() const;
+
     void run();
 
     friend std::ostream &operator<<(std::ostream &os, Game const &game);
@@ -22,8 +22,8 @@ class Game
   private:
     void handleEvents();
 
-    bool running = true;
-    bool requestedExit = false;
+    bool running;
+    bool requestedExit;
 
     AssetManager assets;
     Window window;

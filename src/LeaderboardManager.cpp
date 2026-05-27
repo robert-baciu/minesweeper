@@ -20,13 +20,14 @@ std::vector<LeaderboardEntry> LeaderboardManager::loadAll()
     csv::CSVReader reader(LEADERBOARD_FILE);
     for (csv::CSVRow &row : reader)
     {
-        Difficulty difficulty =
+        auto difficulty =
             DifficultyUtil::fromString(row["difficulty"].get<std::string>());
         auto time = row["time"].get<float>();
 
         LeaderboardEntry entry(difficulty, time);
         scores.push_back(entry);
     }
+
     return scores;
 }
 

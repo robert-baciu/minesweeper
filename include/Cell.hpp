@@ -5,6 +5,8 @@
 class Cell
 {
   public:
+    Cell();
+
     [[nodiscard]] unsigned int getAdjacentMines() const;
     [[nodiscard]] bool isMine() const;
     [[nodiscard]] bool isRevealed() const;
@@ -18,8 +20,9 @@ class Cell
     friend std::ostream &operator<<(std::ostream &os, Cell const &cell);
 
   private:
-    unsigned int adjacentMines = 0;
-    bool mine = false;
-    bool revealed = false;
-    bool flagged = false;
+    unsigned int adjacentMines;
+
+    bool mine;
+    bool revealed;
+    bool flagged;
 };

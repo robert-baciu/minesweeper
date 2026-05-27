@@ -13,6 +13,7 @@
 class State : public sf::Drawable
 {
   public:
+    // TODO: Transition::Action
     enum class Action
     {
         Change,
@@ -27,13 +28,13 @@ class State : public sf::Drawable
         std::unique_ptr<State> state;
     };
 
-    explicit State(StateCtxPtr ctx_);
+    explicit State(std::unique_ptr<StateCtx> ctx_);
 
     ~State() override = default;
 
-    virtual void update(double dt);
-
     virtual void handleEvent(std::optional<sf::Event> const &event);
+
+    virtual void update(double dt);
 
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
@@ -46,7 +47,7 @@ class State : public sf::Drawable
     friend std::ostream &operator<<(std::ostream &os, State const &state);
 
   protected:
-    StateCtxPtr ctx;
+    std::unique_ptr<StateCtx> ctx;
 
-    bool requestedExit = false;
+    bool requestedExit;
 };

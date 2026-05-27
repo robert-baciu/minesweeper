@@ -14,22 +14,33 @@
 class MenuState : public State
 {
   public:
-    explicit MenuState(StateCtxPtr ctx_);
+    explicit MenuState(std::unique_ptr<StateCtx> ctx_);
 
     void buildGui();
+
     void buildPlayParams();
 
-    [[nodiscard]] DifficultyParams getPlayParams() const;
-
     [[nodiscard]] std::optional<Transition> getTransition() override;
+
+    [[nodiscard]] DifficultyParams getPlayParams() const;
 
     void print(std::ostream &os) const override;
 
   private:
+    static void validateEditBox(tgui::EditBox::Ptr &editBox,
+                                unsigned int minVal, unsigned int maxVal);
+
+    static constexpr unsigned int MIN_COLS = 5;
+    static constexpr unsigned int MAX_COLS = 24;
+    static constexpr unsigned int MIN_ROWS = 5;
+    static constexpr unsigned int MAX_ROWS = 24;
+    static constexpr unsigned int MIN_DENSITY = 1;
+    static constexpr unsigned int MAX_DENSITY = 80;
+
     std::map<Difficulty, DifficultyParams> playParams;
 
-    bool gotoPlayClassic = false;
-    bool gotoLeaderboard = false;
+    bool gotoPlayClassic;
+    bool gotoLeaderboard;
 
     tgui::ComboBox::Ptr difficultyBox;
     tgui::EditBox::Ptr colsEdit;

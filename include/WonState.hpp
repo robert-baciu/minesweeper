@@ -10,9 +10,7 @@
 class WonState : public GameState
 {
   public:
-    explicit WonState(GameStateCtxPtr gameCtx_);
-
-    void handleEvent(std::optional<sf::Event> const &event) override;
+    explicit WonState(std::unique_ptr<StateCtx> gameCtx_);
 
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
@@ -21,7 +19,7 @@ class WonState : public GameState
     void print(std::ostream &os) const override;
 
   private:
-    static constexpr sf::Color MINE_COLOR = {15, 15, 15};
+    static constexpr sf::Color FLAG_CORRECT_COLOR{0, 190, 0};
 
-    bool transitionToMenu = false;
+    bool gotoMenu = false;
 };

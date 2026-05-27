@@ -1,5 +1,7 @@
 #include "AssetManager.hpp"
 
+#include <iostream>
+
 void AssetManager::load()
 {
     fonts.add("main", "assets/fonts/VCR_OSD_MONO_1.001.ttf");
@@ -27,6 +29,9 @@ sf::Texture const &AssetManager::getTexture(std::string const &name) const
 
 std::ostream &operator<<(std::ostream &os, AssetManager const &assetManager)
 {
-    os << "AssetManager[fonts=" << assetManager.fonts << "]";
+    os << "AssetManager[";
+    os << "fonts=" << assetManager.fonts << ", ";
+    os << "textures=" << assetManager.textures;
+    os << "]";
     return os;
 }

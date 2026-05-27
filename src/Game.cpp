@@ -2,14 +2,17 @@
 
 #include <memory>
 
+#include "AssetManager.hpp"
 #include "MenuState.hpp"
 
 Game::Game()
+    : running(true),
+      requestedExit(false)
 {
     assets.load();
 
-    states.push_back(std::make_unique<MenuState>(
-        std::make_shared<StateCtx>(assets, window)));
+    auto ctx = std::make_unique<StateCtx>(assets, window);
+    states.push_back(std::make_unique<MenuState>(std::move(ctx)));
 
     prevTime = std::chrono::high_resolution_clock::now();
 }
@@ -40,6 +43,11 @@ void Game::run()
         }
         else if (transition->action == State::Action::Pop)
         {
+            // if (states.empty())
+            // {
+            // TODO: Exception
+            // }
+
             states.pop_back();
         }
         else if (transition->action == State::Action::Exit)
@@ -90,7 +98,7 @@ void Game::handleEvents()
         {
             if (!requestedExit)
             {
-                currentState->requestExit(); // TODO: Is it required?
+                currentState->requestExit(); // TODO: Redesign
                 requestedExit = true;
             }
             continue;

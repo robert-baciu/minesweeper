@@ -7,12 +7,13 @@
 #include "LeaderboardEntry.hpp"
 #include "LeaderboardManager.hpp"
 #include "MenuState.hpp"
+#include "PlayingGrid.hpp"
 #include "PlayingState.hpp"
 
-WonState::WonState(GameStateCtxPtr gameCtx_)
+WonState::WonState(std::unique_ptr<StateCtx> gameCtx_)
     : GameState(std::move(gameCtx_))
 {
-    // TODO: setSmiley(WindowLayout::Smiley::Won)
+    // TODO: SmileyFace class
     gameCtx->getHeader().setSmiley(
         gameCtx->getAssets().getTexture("smiley-won"));
     gameCtx->getHeader().setRemainingMines(0);
@@ -22,37 +23,14 @@ WonState::WonState(GameStateCtxPtr gameCtx_)
     LeaderboardManager::save(entry);
 }
 
-void WonState::handleEvent(std::optional<sf::Event> const &event)
-{
-    if (event->is<sf::Event::MouseButtonPressed>())
-    {
-        auto const *mouse = event->getIf<sf::Event::MouseButtonPressed>();
-
-        sf::Vector2f headerMousePos =
-            gameCtx->getWindow().get().mapPixelToCoords(
-                mouse->position, gameCtx->getHeaderView());
-
-        if (mouse->button == sf::Mouse::Button::Left &&
-            gameCtx->getHeader().getSmiley().getGlobalBounds().contains(
-                headerMousePos))
-        {
-            restart = true;
-            return;
-        }
-    }
-}
-
 void WonState::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
-    target.setView(gameCtx->getHeaderView());
     target.draw(gameCtx->getHeader(), states);
-
-    target.setView(gameCtx->getGridView());
     target.draw(gameCtx->getGrid(), states);
 
-    sf::RectangleShape highlight{
-        {PlayingGrid::CELL_SIZE - PlayingGrid::CELL_PADDING,
-         PlayingGrid::CELL_SIZE - PlayingGrid::CELL_PADDING}};
+    states.transform.translate(gameCtx->getGrid().getPosition());
+
+    sf::RectangleShape highlightRect = PlayingGrid::getCellRect();
 
     gameCtx->getGrid().all(
         [&](int col, int row)
@@ -61,15 +39,16 @@ void WonState::draw(sf::RenderTarget &target, sf::RenderStates states) const
 
             if (cell->isMine())
             {
-                auto cellPos = sf::Vector2f{sf::Vector2i{col, row}} *
-                               PlayingGrid::CELL_SIZE;
+                sf::Vector2f cellPos = PlayingGrid::CELL_SIZE *
+                                       sf::Vector2f(sf::Vector2i(col, row));
+
                 sf::RenderStates cellStates = states;
                 cellStates.transform.translate(cellPos);
 
                 if (cell->isFlagged())
                 {
-                    highlight.setFillColor(sf::Color(0, 190, 0));
-                    target.draw(highlight, cellStates);
+                    highlightRect.setFillColor(FLAG_CORRECT_COLOR);
+                    target.draw(highlightRect, cellStates);
                 }
 
                 target.draw(gameCtx->getGrid().getMineSprite(), cellStates);
@@ -88,8 +67,8 @@ std::optional<State::Transition> WonState::getTransition()
 
     if (restart)
     {
-        auto newGameCtx = std::make_shared<GameStateCtx>(
-            ctx, gameCtx->getDifficulty(), gameCtx->getParams());
+        auto newGameCtx = std::make_unique<GameStateCtx>(
+            *ctx, gameCtx->getDifficulty(), gameCtx->getParams());
 
         State::Transition transition;
         transition.action = State::Action::Change;
@@ -98,11 +77,11 @@ std::optional<State::Transition> WonState::getTransition()
         return transition;
     }
 
-    if (transitionToMenu)
+    if (gotoMenu)
     {
         State::Transition transition;
         transition.action = State::Action::Change;
-        transition.state = std::make_unique<MenuState>(ctx);
+        transition.state = std::make_unique<MenuState>(std::move(ctx));
         return transition;
     }
 

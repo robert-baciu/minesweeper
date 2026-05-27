@@ -1,36 +1,54 @@
 #include "LeaderboardState.hpp"
 
+#include <memory>
+#include <TGUI/Widgets/Button.hpp>
 #include <TGUI/Widgets/ListView.hpp>
 
 #include "LeaderboardEntry.hpp"
 #include "LeaderboardManager.hpp"
+#include "MenuState.hpp"
+#include "State.hpp"
 
-LeaderboardState::LeaderboardState(StateCtxPtr ctx_)
-    : State(std::move(ctx_))
+LeaderboardState::LeaderboardState(std::unique_ptr<StateCtx> ctx)
+    : State(std::move(ctx)),
+      gotoMenu(false)
 {
-    auto listView = tgui::ListView::create();
-    listView->setSize("80%", "80%");
-    listView->setPosition("10%", "10%");
-    // TODO: listView->setOrigin();
+    buildGui();
+    buildEntries();
+}
 
-    ctx->getWindow().getGui().add(listView, "LeaderboardList");
+void LeaderboardState::buildGui()
+{
+    auto &gui = ctx->getWindow().getGui();
 
-    float listWidth = listView->getSize().x;
+    listView = tgui::ListView::create();
+    listView->setSize("80%", "80% - 74");
+    listView->setOrigin(0.5f, 0.0f);
+    listView->setPosition("50%", "10%");
 
-    listView->addColumn("Difficulty", 0.6f * listWidth);
-    listView->addColumn("Time", 0.3f * listWidth);
-
+    listView->addColumn("Difficulty", 0);
+    listView->addColumn("Time", 0);
     listView->setColumnExpanded(0, true);
     listView->setColumnExpanded(1, true);
-
     listView->setColumnAlignment(0, tgui::HorizontalAlignment::Center);
     listView->setColumnAlignment(1, tgui::HorizontalAlignment::Center);
 
-    listView->getRenderer()->setPadding(tgui::Padding(10, 10, 10, 10));
-
     listView->setTextSize(32);
-    listView->setItemHeight(32);
+    listView->setItemHeight(48);
 
+    auto menuBtn = tgui::Button::create("MENU");
+    menuBtn->setSize("80%", 64.0f);
+    menuBtn->setOrigin(0.5f, 0.0f);
+    menuBtn->setPosition("50%", "LeaderboardList.bottom + 10");
+
+    menuBtn->onPress([this]() { gotoMenu = true; });
+
+    gui.add(listView, "LeaderboardList");
+    gui.add(menuBtn, "MenuBtn");
+}
+
+void LeaderboardState::buildEntries()
+{
     std::vector<LeaderboardEntry> allEntries = LeaderboardManager::loadAll();
     std::map<Difficulty, std::vector<LeaderboardEntry>> entriesByDifficulty;
     for (auto const &entry : allEntries)
@@ -73,6 +91,19 @@ LeaderboardState::LeaderboardState(StateCtxPtr ctx_)
             }
         }
     }
+}
+
+std::optional<State::Transition> LeaderboardState::getTransition()
+{
+    if (gotoMenu)
+    {
+        State::Transition transition;
+        transition.action = State::Action::Change;
+        transition.state = std::make_unique<MenuState>(std::move(ctx));
+        return transition;
+    }
+
+    return std::nullopt;
 }
 
 void LeaderboardState::print(std::ostream &os) const

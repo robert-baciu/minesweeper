@@ -25,7 +25,20 @@ template <typename T> class AssetCollection
     friend std::ostream &operator<<(std::ostream &os,
                                     AssetCollection<T> const &assetCollection)
     {
-        os << "AssetCollection[" << assetCollection.collection.size() << "]";
+        os << "AssetCollection{";
+
+        bool first = true;
+        for (auto const &[key, value] : assetCollection.collection)
+        {
+            if (!first)
+            {
+                os << ", ";
+            }
+            os << key;
+            first = false;
+        }
+
+        os << "}";
         return os;
     }
 

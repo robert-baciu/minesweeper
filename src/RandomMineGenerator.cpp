@@ -5,7 +5,7 @@
 
 RandomMineGenerator::RandomMineGenerator(PlayingGrid &grid,
                                          unsigned int mineCount)
-    : MineGenerator{grid, mineCount}
+    : MineGenerator(grid, mineCount)
 {
 }
 
@@ -61,7 +61,6 @@ void RandomMineGenerator::generateSafeStart(int startCol, int startRow)
 
 std::ostream &operator<<(std::ostream &os, RandomMineGenerator const &gen)
 {
-    os << "RandomMineGenerator[grid=" << gen.grid
-       << ", mineCount=" << gen.mineCount << "]";
+    os << "RandomMineGenerator[mineCount=" << gen.mineCount << "]";
     return os;
 }

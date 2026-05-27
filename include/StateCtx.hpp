@@ -8,8 +8,6 @@ class StateCtx
   public:
     explicit StateCtx(AssetManager const &assets, Window &window);
 
-    StateCtx(StateCtx const &other) = default;
-
     virtual ~StateCtx() = default;
 
     [[nodiscard]] AssetManager const &getAssets() const;
@@ -22,5 +20,3 @@ class StateCtx
     AssetManager const &assets;
     Window &window;
 };
-
-using StateCtxPtr = std::shared_ptr<StateCtx>;

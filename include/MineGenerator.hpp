@@ -18,5 +18,5 @@ class MineGenerator
   protected:
     PlayingGrid &grid;
 
-    unsigned int mineCount;
+    unsigned int const mineCount;
 };

@@ -6,8 +6,7 @@
 class LostState : public GameState
 {
   public:
-    LostState(GameStateCtxPtr gameCtx_, sf::Vector2i detonated_);
-    void handleEvent(std::optional<sf::Event> const &event) override;
+    explicit LostState(std::unique_ptr<StateCtx> gameCtx_);
 
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
@@ -19,9 +18,7 @@ class LostState : public GameState
     static constexpr sf::Color MINE_COLOR{15, 15, 15};
     static constexpr sf::Color MINE_FLAGGED_COLOR{0, 190, 0};
     static constexpr sf::Color MINE_DETONATED_COLOR{190, 0, 0};
-    static constexpr sf::Color FLAG_MISPLACE_COLOR{190, 0, 0};
+    static constexpr sf::Color FLAG_WRONG_COLOR{190, 0, 0};
 
-    sf::Vector2i detonated;
-
-    bool transitionToMenu = false;
+    bool gotoMenu;
 };

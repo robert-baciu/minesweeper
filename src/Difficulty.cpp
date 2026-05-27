@@ -49,5 +49,6 @@ std::vector<std::string> DifficultyUtil::allStrings()
     {
         strings.push_back(name);
     }
+
     return strings;
 }
