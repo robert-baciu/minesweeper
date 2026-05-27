@@ -30,7 +30,7 @@ class State : public sf::Drawable
 
     explicit State(std::unique_ptr<StateCtx> ctx_);
 
-    ~State() override = default;
+    virtual ~State() = default;
 
     virtual void handleEvent(std::optional<sf::Event> const &event);
 
