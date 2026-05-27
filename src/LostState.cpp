@@ -7,6 +7,7 @@
 #include <SFML/System/Vector2.hpp>
 
 #include "MenuState.hpp"
+#include "PausedState.hpp"
 #include "PlayingGrid.hpp"
 #include "PlayingState.hpp"
 
@@ -73,6 +74,14 @@ std::optional<State::Transition> LostState::getTransition()
     {
         State::Transition transition;
         transition.action = State::Action::Exit;
+        return transition;
+    }
+
+    if (pause)
+    {
+        State::Transition transition;
+        transition.action = State::Action::Change;
+        transition.state = std::make_unique<PausedState>(std::move(ctx));
         return transition;
     }
 

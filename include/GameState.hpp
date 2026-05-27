@@ -19,5 +19,6 @@ class GameState : public State
   protected:
     GameStateCtx *gameCtx;
 
+    bool pause;
     bool restart;
 };

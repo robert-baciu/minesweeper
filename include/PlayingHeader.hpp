@@ -23,6 +23,7 @@ class PlayingHeader : public sf::Drawable
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
     void startClock();
+    void stopClock();
     float getTime() const;
 
     void setRemainingMines(unsigned int remaining);

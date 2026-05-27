@@ -5,6 +5,7 @@
 #include <SFML/Window/Mouse.hpp>
 
 #include "LostState.hpp"
+#include "PausedState.hpp"
 #include "WonState.hpp"
 
 PlayingState::PlayingState(std::unique_ptr<StateCtx> gameCtx_)
@@ -59,6 +60,14 @@ std::optional<State::Transition> PlayingState::getTransition()
     {
         State::Transition transition;
         transition.action = State::Action::Exit;
+        return transition;
+    }
+
+    if (pause)
+    {
+        State::Transition transition;
+        transition.action = State::Action::Change;
+        transition.state = std::make_unique<PausedState>(std::move(ctx));
         return transition;
     }
 

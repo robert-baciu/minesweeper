@@ -97,6 +97,11 @@ void PlayingHeader::startClock()
     clock.start();
 }
 
+void PlayingHeader::stopClock()
+{
+    clock.stop();
+}
+
 float PlayingHeader::getTime() const
 {
     return clock.getElapsedTime().asSeconds();

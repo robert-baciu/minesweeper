@@ -89,6 +89,7 @@ target_sources(${MAIN_EXECUTABLE_NAME}
     src/LeaderboardState.cpp
     src/LostState.cpp
     src/MenuState.cpp
+    src/PausedState.cpp
     src/PlayingGrid.cpp
     src/PlayingHeader.cpp
     src/PlayingState.cpp
