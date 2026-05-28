@@ -5,10 +5,10 @@ Reimplementarea unui joc clasic, într-o manieră neclasică. Dacă deschideai j
 Nu ești un simplu individ care încearcă să descopere minele de pe tablă. Acum, lupți împotrivă unui mediu ostil — jocul ăsta nu vrea să câștigi. Folosește-ți abilitățile pentru a învinge.
 
 ## Roadmap
-- [ ] Reimplementarea jocului original
-- [ ] Dificultate personalizată: număr de mine, dimensiune, etc.
-- [ ] Niveluri de dificultate prestabilite
-- [ ] Leaderboard cu scorurile obținute
+- [x] Reimplementarea jocului original
+- [x] Dificultate personalizată: număr de mine, dimensiune, etc.
+- [x] Niveluri de dificultate prestabilite
+- [x] Leaderboard cu scorurile obținute
 - [ ] Salvarea și vizualizarea în timp real a gameplay-urilor precedente
 - [ ] Dificultăți suplimentare
   - [ ] Celule care necesită mai multe click-uri (sau un anumit CPM atins pentru o durată de timp) pentru a fi descoperite
@@ -27,7 +27,7 @@ Nu ești un simplu individ care încearcă să descopere minele de pe tablă. Ac
   - [ ] Îngheață contorul pentru un timp nedeterminat, dar nu mai ai voie să interacționezi cu tabla (doar în modul Contra-timp)
   - [ ] Crește dimensiunea zonei pe care o poți vedea pentru un timp determinat (doar în modul Telescop)
 - [ ] Moduri de joc
-  - [ ] Clasic
+  - [x] Clasic
   - [ ] Contra-timp: timp limită în care să rezolvi jocul
   - [ ] Telescop: poți vedea, permanent, doar o zonă de 3x3, pe care o poți naviga
 - [ ] Tutorial
@@ -42,21 +42,21 @@ Nu ești un simplu individ care încearcă să descopere minele de pe tablă. Ac
 ## Tema 1
 
 #### Cerințe
-- [ ] definirea a minim **3-4 clase** folosind compunere cu clasele definite de voi; moștenirile nu se iau în considerare aici
-- [ ] constructori de inițializare cu parametri pentru fiecare clasă
-- [ ] pentru o aceeași (singură) clasă: constructor de copiere, `operator=` de copiere, destructor
+- [x] definirea a minim **3-4 clase** folosind compunere cu clasele definite de voi; moștenirile nu se iau în considerare aici
+- [x] constructori de inițializare cu parametri pentru fiecare clasă
+- [x] pentru o aceeași (singură) clasă: constructor de copiere, `operator=` de copiere, destructor
 <!-- - [ ] pentru o altă clasă: constructor de mutare, `operator=` de mutare, destructor -->
 <!-- - [ ] pentru o altă clasă: toate cele 5 funcții membru speciale -->
-- [ ] `operator<<` pentru **toate** clasele pentru afișare (`std::ostream`) folosind compunere de apeluri cu `operator<<`
-- [ ] cât mai multe `const` (unde este cazul) și funcții `private`
-- [ ] implementarea a minim 3 funcții membru publice pentru funcționalități netriviale specifice temei alese, dintre care cel puțin 1-2 funcții mai complexe
+- [x] `operator<<` pentru **toate** clasele pentru afișare (`std::ostream`) folosind compunere de apeluri cu `operator<<`
+- [x] cât mai multe `const` (unde este cazul) și funcții `private`
+- [x] implementarea a minim 3 funcții membru publice pentru funcționalități netriviale specifice temei alese, dintre care cel puțin 1-2 funcții mai complexe
   - nu doar citiri/afișări sau adăugat/șters elemente într-un/dintr-un vector
-- [ ] scenariu de utilizare **cu sens** a claselor definite:
+- [x] scenariu de utilizare **cu sens** a claselor definite:
   - crearea de obiecte și apelarea tuturor funcțiilor membru publice în main
   - vor fi adăugate în fișierul `tastatura.txt` DOAR exemple de date de intrare de la tastatură (dacă există); dacă aveți nevoie de date din fișiere, creați alte fișiere separat
-- [ ] minim 52-60% din codul propriu să fie C++, `.gitattributes` configurat corect
-- [ ] tag de `git`: de exemplu `v0.1`
-- [ ] serviciu de integrare continuă (CI) cu **toate bifele**; exemplu: GitHub Actions
+- [x] minim 52-60% din codul propriu să fie C++, `.gitattributes` configurat corect
+- [x] tag de `git`: de exemplu `v0.1`
+- [x] serviciu de integrare continuă (CI) cu **toate bifele**; exemplu: GitHub Actions
 - [ ] code review #1 2 proiecte
 
 ## Tema 2
@@ -73,22 +73,22 @@ Nu ești un simplu individ care încearcă să descopere minele de pe tablă. Ac
   - [x] apelarea constructorului din clasa de bază din constructori din derivate
   - [x] clasă cu atribut de tip pointer la o clasă de bază cu derivate; aici apelați funcțiile virtuale prin pointer de bază, eventual prin interfața non-virtuală din bază
     - [ ] suprascris cc/op= pentru copieri/atribuiri corecte, copy and swap
-    - [ ] `dynamic_cast`/`std::dynamic_pointer_cast` pentru downcast cu sens
+    - [x] `dynamic_cast`/`std::dynamic_pointer_cast` pentru downcast cu sens
     - [x] smart pointers (recomandat, opțional)
-- [ ] excepții
-  - [ ] ierarhie proprie cu baza `std::exception` sau derivată din `std::exception`; minim **3** clase pentru erori specifice distincte
+- [x] excepții
+  - [x] ierarhie proprie cu baza `std::exception` sau derivată din `std::exception`; minim **3** clase pentru erori specifice distincte
     - clasele de excepții trebuie să trateze categorii de erori distincte (exemplu de erori echivalente: citire fișiere cu diverse extensii)
-  - [ ] utilizare cu sens: de exemplu, `throw` în constructor (sau funcție care întoarce un obiect), `try`/`catch` în `main`
+  - [x] utilizare cu sens: de exemplu, `throw` în constructor (sau funcție care întoarce un obiect), `try`/`catch` în `main`
   - această ierarhie va fi complet independentă de ierarhia cu funcții virtuale
-- [ ] funcții și atribute `static`
+- [x] funcții și atribute `static`
 - [x] STL
 - [x] cât mai multe `const`
 - [x] funcții *de nivel înalt*, de eliminat cât mai mulți getters/setters/funcții low-level
-- [ ] minim 75-78% din codul propriu să fie C++
-- [ ] la sfârșit: commit separat cu adăugarea unei noi clase derivate fără a modifica restul codului, **pe lângă cele 3 derivate deja adăugate** din aceeași ierarhie
+- [x] minim 75-78% din codul propriu să fie C++
+- [x] la sfârșit: commit separat cu adăugarea unei noi clase derivate fără a modifica restul codului, **pe lângă cele 3 derivate deja adăugate** din aceeași ierarhie
   - noua derivată nu poate fi una existentă care a fost ștearsă și adăugată din nou
   - noua derivată va fi integrată în codul existent (adică va fi folosită, nu adăugată doar ca să fie)
-- [ ] tag de `git` pe commit cu **toate bifele**: de exemplu `v0.2`
+- [x] tag de `git` pe commit cu **toate bifele**: de exemplu `v0.2`
 - [ ] code review #2 2 proiecte
 
 ## Tema 3
