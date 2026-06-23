@@ -1,12 +1,12 @@
 #pragma once
 
-#include <stdexcept>
+#include "MinesweeperError.hpp"
 
-class InvalidDifficultyError : public std::runtime_error
+class InvalidDifficultyError : public MinesweeperError
 {
   public:
     InvalidDifficultyError()
-        : std::runtime_error("InvalidDifficultyError: Invalid difficulty")
+        : MinesweeperError("InvalidDifficultyError: Invalid difficulty")
     {
     }
 };

@@ -1,15 +1,15 @@
 #pragma once
 
-#include <stdexcept>
+#include "MinesweeperError.hpp"
 
-class CellError : public std::runtime_error
+class CellError : public MinesweeperError
 {
   public:
     ~CellError() override = default;
 
   protected:
     explicit CellError(std::string const &message)
-        : std::runtime_error("CellError: " + message)
+        : MinesweeperError("CellError: " + message)
     {
     }
 };

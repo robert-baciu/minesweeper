@@ -1,4 +1,5 @@
 #include "Game.hpp"
+#include "MinesweeperError.hpp"
 
 int main()
 {
@@ -11,15 +12,20 @@ int main()
             // std::cout << game << std::endl;
         }
     }
+    catch (MinesweeperError const &e)
+    {
+        std::cerr << "[Minesweeper error] " << e.what() << std::endl;
+        return 1;
+    }
     catch (std::exception const &e)
     {
-        std::cerr << "[Exception] " << e.what() << std::endl;
+        std::cerr << "[Standard error] " << e.what() << std::endl;
         return 1;
     }
     catch (...)
     {
-        std::cerr << "[Exception] Unknown error" << std::endl;
-        return 2;
+        std::cerr << "[Unknown error] ?" << std::endl;
+        return 1;
     }
 
     return 0;
